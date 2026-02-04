@@ -16,10 +16,13 @@ export const registerController = async (req, res) => {
     }
 
     const hashedPassword = await bcryptjs.hashSync(password, 8);
+    const refreshToken = await generateRefreshToken({ username });
+
     await User.create({
       username,
       email,
       password: hashedPassword,
+      refreshToken,
     });
 
     return res.status(201).json({
