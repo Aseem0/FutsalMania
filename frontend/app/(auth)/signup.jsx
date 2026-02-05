@@ -52,7 +52,8 @@ export default function SignUpScreen() {
     } catch (error) {
       console.error("Signup error:", error);
       const errorMessage =
-        error.response?.data?.message || "Something went wrong. Please try again.";
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
       Alert.alert("Signup Failed", errorMessage);
     } finally {
       setLoading(false);
@@ -61,67 +62,61 @@ export default function SignUpScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 bg-white ">
+      <SafeAreaView className="flex-1 bg-black ">
         <StatusBar barStyle="dark-content" />
 
         <View className="flex-1 max-w-[430px] w-full mx-auto justify-center">
           {/* Header Section */}
           <View className="pt-4 px-8 pb-4">
             <View className="mb-4">
-              <MaterialCommunityIcons name="soccer" size={32} color="#000000" />
+              <MaterialCommunityIcons name="soccer" size={32} color="#ffffff" />
             </View>
 
-            <Text className="text-black text-[32px] font-bold leading-tight tracking-tight">
+            <Text className="text-white text-[32px] font-bold leading-tight tracking-tight">
               Create Account
             </Text>
           </View>
 
           {/* Form Container */}
-          <View className="px-8 pb-6">
+          <View className="px-8 pb-6 mt-5">
             {/* Username Input */}
             <View className="mb-5">
-              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-black opacity-60 mb-1">
+              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-white">
                 Username
               </Text>
               <TextInput
-                placeholder="alex_thompson"
-                placeholderTextColor="#d4d4d4"
                 value={username}
                 onChangeText={setUsername}
                 autoCapitalize="none"
-                className="w-full bg-transparent border-b border-black px-0 py-2 text-base text-black"
+                className="w-full bg-transparent border-b border-white px-0 py-2 text-base text-white"
               />
             </View>
 
             {/* Email Input */}
             <View className="mb-5">
-              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-black opacity-60 mb-1">
+              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-white">
                 Email Address
               </Text>
               <TextInput
-                placeholder="alex@example.com"
-                placeholderTextColor="#d4d4d4"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
                 onChangeText={setEmail}
-                className="w-full bg-transparent border-b border-black px-0 py-2 text-base text-black"
+                className="w-full bg-transparent border-b border-white px-0 py-2 text-base text-white"
               />
             </View>
 
             {/* Password Input */}
             <View className="mb-5">
-              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-black opacity-60 mb-1">
+              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-white">
                 Password
               </Text>
-              <View className="relative flex-row items-center border-b border-black">
+              <View className="relative flex-row items-center border-b border-white">
                 <TextInput
-                  placeholder="••••••••"
-                  placeholderTextColor="#d4d4d4"
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
-                  className="flex-1 bg-transparent px-0 py-2 text-base text-black"
+                  className="flex-1 bg-transparent px-0 py-2 text-base text-white"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
@@ -137,17 +132,15 @@ export default function SignUpScreen() {
             </View>
 
             <View className="mb-5">
-              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-black opacity-60 mb-1">
+              <Text className="text-[11px] uppercase tracking-[0.15em] font-medium text-white">
                 Confirm Password
               </Text>
-              <View className="relative flex-row items-center border-b border-black">
+              <View className="relative flex-row items-center border-b border-white">
                 <TextInput
-                  placeholder="••••••••"
-                  placeholderTextColor="#d4d4d4"
                   secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
-                  className="flex-1 bg-transparent px-0 py-2 text-base text-black"
+                  className="flex-1 bg-transparent px-0 py-2 text-base text-white"
                 />
                 <TouchableOpacity
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -165,34 +158,29 @@ export default function SignUpScreen() {
             {/* CTA Section */}
             <View className="pt-6">
               <TouchableOpacity
-                className={`w-full bg-black py-4 items-center rounded-lg ${
+                className={`w-full bg-white py-4 items-center rounded-lg ${
                   loading ? "opacity-70" : ""
                 }`}
                 activeOpacity={0.98}
                 onPress={handleSignUp}
                 disabled={loading}
               >
-                <Text className="text-white text-sm font-bold uppercase tracking-[0.2em]">
+                <Text className="text-black text-sm font-bold uppercase tracking-[0.2em]">
                   {loading ? "Creating Account..." : "Sign Up"}
                 </Text>
               </TouchableOpacity>
 
               <View className="flex items-center pt-6">
-                <Text className="text-sm font-light opacity-40 text-black mb-1">
+                <Text className="text-sm font-light opacity-40 text-white mb-1">
                   Already have an account?
                 </Text>
                 <TouchableOpacity onPress={() => router.replace("/login")}>
-                  <Text className="text-sm font-medium text-black border-b border-black pb-0.5 tracking-wide">
+                  <Text className="text-sm font-medium text-white border-b border-white pb-0.5 tracking-wide">
                     Login
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-
-          {/* Decorative Bottom Bar */}
-          <View className="h-8 flex items-center justify-center">
-            <View className="w-32 h-1 bg-black/10 dark:bg-white/10 rounded-full" />
           </View>
         </View>
       </SafeAreaView>

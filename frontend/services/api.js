@@ -21,4 +21,8 @@ export const register = (userData) => {
   return api.post("/register", userData);
 };
 
+export const login = (userData) => {
+  return api.post("/login", userData);
+};
+
 export default api;

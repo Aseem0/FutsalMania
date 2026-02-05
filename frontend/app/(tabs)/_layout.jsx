@@ -1,5 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Tabs, router } from 'expo-router';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
 
 export default function TabLayout() {
   return (
@@ -9,6 +10,14 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <Ionicons name="home" size={28} color={color} />,
+          headerRight: () => (
+            <TouchableOpacity 
+              onPress={() => router.replace('/login')}
+              style={{ marginRight: 15 }}
+            >
+              <MaterialCommunityIcons name="login" size={24} color="#000" />
+            </TouchableOpacity>
+          ),
         }}
       />
     </Tabs>
