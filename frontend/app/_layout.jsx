@@ -3,9 +3,6 @@ import { useEffect } from "react";
 import "../global.css";
 
 export default function RootLayout() {
-  // Logic for authentication can be added here
-  // For now, it just sets up the Stack
-
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

@@ -14,7 +14,7 @@ export default function RootIndex() {
       try {
         const token = await AsyncStorage.getItem("userToken");
         const onboarding = await AsyncStorage.getItem("hasCompletedOnboarding");
-        
+
         setIsAuthenticated(!!token);
         setHasCompletedOnboarding(onboarding === "true");
       } catch (e) {
@@ -29,7 +29,14 @@ export default function RootIndex() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: "black", justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "black",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color="white" />
       </View>
     );
