@@ -36,7 +36,7 @@ export default function LoginScreen() {
         await AsyncStorage.setItem("userToken", accessToken);
         await AsyncStorage.setItem("username", response.data.userData.username);
 
-        router.replace("/");
+        router.replace("/(onboarding)");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -122,7 +122,7 @@ export default function LoginScreen() {
             {/* CTA Section */}
             <View className="pt-4">
               <TouchableOpacity
-                className={`w-full bg-white py-5 items-center rounded-lg ${
+                className={`w-full bg-amber-400 py-5 items-center rounded-lg ${
                   loading ? "opacity-70" : ""
                 }`}
                 activeOpacity={0.98}
@@ -139,7 +139,7 @@ export default function LoginScreen() {
                   Don't have an account?
                 </Text>
                 <TouchableOpacity onPress={() => router.push("/signup")}>
-                  <Text className="text-sm font-medium text-white border-b border-white pb-0.5 tracking-wide">
+                  <Text className="text-sm font-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
                     Sign Up
                   </Text>
                 </TouchableOpacity>

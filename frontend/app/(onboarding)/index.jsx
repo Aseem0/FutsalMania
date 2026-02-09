@@ -56,6 +56,7 @@ export default function OnboardingScreen() {
           <ScrollView
             className="flex-1 px-6"
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
           >
             <View className="pt-10">
               <Text className="text-white text-[30px] font-black leading-tight">
@@ -89,7 +90,7 @@ export default function OnboardingScreen() {
                     activeOpacity={0.8}
                     className={`flex-col items-center justify-center p-6 rounded-[32px] h-40 border-2 ${
                       selections.position === item.id
-                        ? "bg-white border-white"
+                        ? "bg-amber-400"
                         : "bg-zinc-900/40 border-white/5"
                     }`}
                   >
@@ -121,7 +122,7 @@ export default function OnboardingScreen() {
             </View>
 
             {/* Skill Level Section */}
-            <View className="mt-8 mb-4">
+            <View className="mt-8">
               <View className="flex-row items-center justify-between mb-5 px-1">
                 <Text className="text-white/40 text-[11px] font-black tracking-[2px] uppercase">
                   Skill Level
@@ -134,9 +135,10 @@ export default function OnboardingScreen() {
                   <TouchableOpacity
                     key={level}
                     onPress={() => toggleSelection("skillLevel", level)}
-                    className="flex-1 items-center py-4 rounded-[18px]"
+                    className={`flex-1 items-center py-4 rounded-[18px] ${
+                      selections.skillLevel === level ? "bg-amber-400" : ""
+                    }`}
                     style={{
-                      backgroundColor: selections.skillLevel === level ? "white" : "transparent",
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: selections.skillLevel === level ? 0.2 : 0,
@@ -202,7 +204,7 @@ export default function OnboardingScreen() {
                     onPress={() => toggleSelection("times", time)}
                     className={`h-14 items-center justify-center rounded-2xl px-6 border-2 ${
                       selections.times.includes(time)
-                        ? "bg-white border-white"
+                        ? "bg-amber-400"
                         : "bg-zinc-900/40 border-white/5"
                     }`}
                   >
@@ -234,7 +236,7 @@ export default function OnboardingScreen() {
                     onPress={() => toggleSelection("days", day)}
                     className={`h-12 min-w-[58px] items-center justify-center rounded-2xl border-2 ${
                       selections.days.includes(day)
-                        ? "bg-white border-white"
+                        ? "bg-amber-400"
                         : "bg-zinc-900/40 border-white/5"
                     }`}
                   >
@@ -328,7 +330,7 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
 
             <View className="items-center">
-              <Text className="text-sm font-bold text-white tracking-widest">
+              <Text className="text-sm font-bold text-white/50 tracking-widest">
                 Step {currentSlide + 1} of 3
               </Text>
             </View>
@@ -339,7 +341,7 @@ export default function OnboardingScreen() {
           {/* Persistent Progress Bar */}
           <View className="w-full bg-white/10 h-[4px] rounded-full overflow-hidden">
             <View
-              className="bg-white h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]"
+              className="bg-amber-400 h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]"
               style={{
                 width: `${((currentSlide + 1) / 3) * 100}%`,
               }}
@@ -366,9 +368,8 @@ export default function OnboardingScreen() {
                 router.replace("/(tabs)");
               }
             }}
-            className="w-full h-16 bg-white rounded-[24px] flex-row items-center justify-center"
+            className="w-full h-16 bg-amber-400 rounded-[24px] flex-row items-center justify-center"
             style={{
-              backgroundColor: "white",
               shadowColor: "#fff",
               shadowOffset: { width: 0, height: 8 },
               shadowOpacity: 0.15,

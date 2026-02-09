@@ -158,7 +158,7 @@ export default function SignUpScreen() {
             {/* CTA Section */}
             <View className="pt-6">
               <TouchableOpacity
-                className={`w-full bg-white py-4 items-center rounded-lg ${
+                className={`w-full bg-amber-400 py-4 items-center rounded-lg ${
                   loading ? "opacity-70" : ""
                 }`}
                 activeOpacity={0.98}
@@ -175,7 +175,7 @@ export default function SignUpScreen() {
                   Already have an account?
                 </Text>
                 <TouchableOpacity onPress={() => router.replace("/login")}>
-                  <Text className="text-sm font-medium text-white border-b border-white pb-0.5 tracking-wide">
+                  <Text className="text-sm font-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
                     Login
                   </Text>
                 </TouchableOpacity>

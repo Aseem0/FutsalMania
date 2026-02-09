@@ -46,14 +46,9 @@ export default function RootIndex() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // FORCE ONBOARDING FOR UI TESTING (User request)
-  return <Redirect href="/(onboarding)" />;
-
-  /*
   if (!hasCompletedOnboarding) {
     return <Redirect href="/(onboarding)" />;
   }
 
   return <Redirect href="/(tabs)" />;
-  */
 }
