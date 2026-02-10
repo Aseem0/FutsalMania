@@ -19,11 +19,11 @@ export default function HomeScreen() {
       
       <View className="flex-1 max-w-md mx-auto w-full border-x border-[#1F1F1F]">
         {/* Header */}
-        <View className="bg-black/80 px-4 py-4 border-b border-[#1F1F1F]">
+        <View className="bg-black/90 px-4 py-4 border-b border-[#1F1F1F]">
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-bold text-white">
-              <Text className="italic">AMBER</Text>
-              <Text className="text-[#FFB300]">SPORT</Text>
+              <Text className="italic">FUTSAL</Text>
+              <Text className="text-[#FFB300]">MANIA</Text>
             </Text>
             
             <View className="flex-row items-center gap-4">
@@ -33,10 +33,10 @@ export default function HomeScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                onPress={() => router.replace('/login')}
-                className="h-8 w-8 items-center justify-center rounded-full border border-[#1F1F1F] bg-[#121212]"
+                onPress={() => router.push("/(auth)/login")}
+                className="h-8 w-8 rounded-full items-center justify-center border border-[#1F1F1F] bg-[#121212]"
               >
-                <MaterialCommunityIcons name="account-outline" size={20} color="#ffffff" />
+                <MaterialCommunityIcons name="chevron-left" size={24} color="#ffffff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -102,11 +102,11 @@ export default function HomeScreen() {
                 className="flex-1 flex-col gap-3 rounded-xl border border-[#1F1F1F] bg-[#121212] p-5"
                 activeOpacity={0.95}
               >
-                <MaterialCommunityIcons name="shield-outline" size={32} color="#ffffff" />
+                <MaterialCommunityIcons name="trophy-outline" size={32} color="#ffffff" />
                 <View>
-                  <Text className="font-semibold text-base text-white">Find Teams</Text>
+                  <Text className="font-semibold text-base text-white">Tournaments</Text>
                   <Text className="text-[10px] text-[#A1A1AA] mt-0.5 uppercase tracking-widest font-bold">
-                    CLUB
+                    CHAMPIONSHIP
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -132,7 +132,7 @@ export default function HomeScreen() {
                   className="absolute inset-0 w-full h-full"
                   resizeMode="cover"
                 />
-                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 
                 <View className="relative h-full flex-col justify-between p-5">
                   <View className="flex-row justify-between items-start">
@@ -175,7 +175,7 @@ export default function HomeScreen() {
                   className="absolute inset-0 w-full h-full"
                   resizeMode="cover"
                 />
-                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 
                 <View className="relative h-full flex-col justify-between p-5">
                   <View className="flex-row justify-between items-start">
@@ -214,33 +214,6 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
 
-        {/* Bottom Nav */}
-        <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pb-8 pt-3 px-6">
-          <View className="flex-row justify-between items-center">
-            <TouchableOpacity className="flex-col items-center gap-1">
-              <MaterialCommunityIcons name="home" size={24} color="#FFB300" />
-              <Text className="text-[10px] font-bold text-[#FFB300]">Home</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-col items-center gap-1">
-              <MaterialCommunityIcons name="soccer" size={24} color="#52525b" />
-              <Text className="text-[10px] font-medium text-zinc-600">Matches</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-col items-center gap-1">
-              <MaterialCommunityIcons name="chart-bar" size={24} color="#52525b" />
-              <Text className="text-[10px] font-medium text-zinc-600">Rankings</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-col items-center gap-1">
-              <MaterialCommunityIcons name="account-outline" size={24} color="#52525b" />
-              <Text className="text-[10px] font-medium text-zinc-600">Profile</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* iOS Space */}
-        <View className="absolute bottom-0 w-full h-8 bg-black" />
       </View>
     </SafeAreaView>
   );
