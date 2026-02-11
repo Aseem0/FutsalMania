@@ -111,6 +111,7 @@ export default function ProfileScreen() {
               icon="account-outline" 
               title="Personal Information" 
               subtitle="Edit your name, email, and location" 
+              onPress={() => router.push('/personal-info')}
             />
             <ProfileOption 
               icon="shield-check-outline" 
