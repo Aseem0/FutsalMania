@@ -117,6 +117,7 @@ export default function ProfileScreen() {
               icon="shield-check-outline" 
               title="Privacy & Security" 
               subtitle="Password, biometric login" 
+              onPress={() => router.push('/privacy-settings')}
             />
             
             <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mt-6 mb-4 ml-1">Statistics</Text>

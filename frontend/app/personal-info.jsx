@@ -29,20 +29,23 @@ export default function PersonalInfoScreen() {
         {label}
       </Text>
       <View className="flex-row items-center bg-[#121212] border border-[#1F1F1F] rounded-xl px-4 h-14">
-        <MaterialCommunityIcons name={icon} size={20} color="#FFB300" className="mr-3" />
+        <View style={{ marginRight: 12 }}>
+          <MaterialCommunityIcons name={icon} size={20} color="#FFB300" />
+        </View>
         <TextInput
           value={value}
           onChangeText={onChangeText}
-          className="flex-1 text-white text-base ml-3"
+          className="flex-1 text-white text-base"
           placeholderTextColor="#3F3F46"
           keyboardType={keyboardType}
+          style={{ marginLeft: 4 }}
         />
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black text-white">
       <StatusBar barStyle="light-content" />
       
       <KeyboardAvoidingView 
@@ -57,7 +60,7 @@ export default function PersonalInfoScreen() {
                 <MaterialCommunityIcons name="chevron-left" size={28} color="#ffffff" />
               </TouchableOpacity>
               <Text className="text-xl font-bold text-white">Personal Information</Text>
-              <View className="w-10" /> {/* Spacer for centering */}
+              <View className="w-10" />
             </View>
           </View>
 
@@ -115,11 +118,8 @@ export default function PersonalInfoScreen() {
 
             {/* Save Button */}
             <TouchableOpacity 
-              className="bg-[#FFB300] h-14 rounded-2xl items-center justify-center mt-6 shadow-lg shadow-amber-500/20"
-              onPress={() => {
-                // Handle save logic
-                router.back();
-              }}
+              className="bg-[#FFB300] h-14 rounded-2xl items-center justify-center mt-6"
+              onPress={() => router.back()}
             >
               <Text className="text-black font-bold text-lg uppercase tracking-wider">Save Changes</Text>
             </TouchableOpacity>

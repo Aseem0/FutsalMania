@@ -10,7 +10,7 @@ const BottomNav = () => {
   const navItems = [
     { name: 'Home', icon: 'home', activeIcon: 'home', path: '/(tabs)' },
     { name: 'Explore', icon: 'compass-outline', activeIcon: 'compass', path: '/explore' },
-    { name: 'Tourneys', icon: 'trophy-outline', activeIcon: 'trophy', path: '/tourneys' },
+    { name: 'Teams', icon: 'trophy-outline', activeIcon: 'trophy', path: '/teams' },
     { name: 'Profile', icon: 'account-outline', activeIcon: 'account', path: '/(tabs)/profile' },
   ];
 
@@ -20,7 +20,7 @@ const BottomNav = () => {
   };
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pb-8 pt-3 px-4">
+    <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pb-3 pt-3">
       <View className="flex-row justify-between items-end">
         {navItems.slice(0, 2).map((item) => (
           <TouchableOpacity 
