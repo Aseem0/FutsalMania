@@ -10,26 +10,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import ProfileOption from '../../components/ProfileOption';
 
 export default function ProfileScreen() {
   const router = useRouter();
 
-  const ProfileOption = ({ icon, title, subtitle, onPress, color = "#ffffff" }) => (
-    <TouchableOpacity 
-      onPress={onPress}
-      className="flex-row items-center p-4 mb-3 rounded-xl border border-[#1F1F1F] bg-[#121212]"
-      activeOpacity={0.7}
-    >
-      <View className="h-10 w-10 rounded-full items-center justify-center bg-black/50 mr-4">
-        <MaterialCommunityIcons name={icon} size={22} color={color} />
-      </View>
-      <View className="flex-1">
-        <Text className="text-white font-semibold text-base">{title}</Text>
-        {subtitle && <Text className="text-[#A1A1AA] text-xs">{subtitle}</Text>}
-      </View>
-      <MaterialCommunityIcons name="chevron-right" size={20} color="#3F3F46" />
-    </TouchableOpacity>
-  );
+  const STATS = [
+    { label: 'Games', value: '12' },
+    { label: 'Rate', value: '85%' },
+    { label: 'Points', value: '450', color: '#FFB300' },
+  ];
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -49,7 +39,11 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <ScrollView className="flex-1 px-5 pt-8" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          className="flex-1 px-5 pt-8" 
+          contentContainerStyle={{ paddingBottom: 100 }} 
+          showsVerticalScrollIndicator={false}
+        >
           {/* Profile Card */}
           <View className="items-center mb-8">
             <View className="relative">
@@ -65,23 +59,18 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
             <Text className="text-2xl font-bold text-white mt-4">Aseem Rai</Text>
-            <Text className="text-[#A1A1AA] text-sm">Pro Player • London, UK</Text>
+            <Text className="text-[#A1A1AA] text-sm">Pro Player • Kathmandu, Nepal</Text>
             
             <View className="flex-row gap-8 mt-6">
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">12</Text>
-                <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest">Games</Text>
-              </View>
-              <View className="h-8 w-[1px] bg-[#1F1F1F] self-center" />
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">85%</Text>
-                <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest">Rate</Text>
-              </View>
-              <View className="h-8 w-[1px] bg-[#1F1F1F] self-center" />
-              <View className="items-center">
-                <Text className="text-[#FFB300] font-bold text-lg">450</Text>
-                <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest">Points</Text>
-              </View>
+              {STATS.map((stat, index) => (
+                <React.Fragment key={stat.label}>
+                  <View className="items-center">
+                    <Text className={`font-bold text-lg ${stat.color ? `text-[${stat.color}]` : 'text-white'}`}>{stat.value}</Text>
+                    <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest">{stat.label}</Text>
+                  </View>
+                  {index < STATS.length - 1 && <View className="h-8 w-[1px] bg-[#1F1F1F] self-center" />}
+                </React.Fragment>
+              ))}
             </View>
           </View>
 
@@ -104,9 +93,9 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Menu Options */}
+          {/* Menu Sections */}
           <View className="mb-10">
-            <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mb-4 ml-1">Account</Text>
+            <SectionHeader title="Account" />
             <ProfileOption 
               icon="account-outline" 
               title="Personal Information" 
@@ -120,7 +109,7 @@ export default function ProfileScreen() {
               onPress={() => router.push('/privacy-settings')}
             />
             
-            <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mt-6 mb-4 ml-1">Statistics</Text>
+            <SectionHeader title="Statistics" topMargin />
             <ProfileOption 
               icon="chart-bar" 
               title="Performance Insights" 
@@ -130,9 +119,10 @@ export default function ProfileScreen() {
               icon="history" 
               title="Match History" 
               subtitle="View all your past games" 
+              onPress={() => router.push('/match-history')}
             />
 
-            <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mt-6 mb-4 ml-1">Other</Text>
+            <SectionHeader title="Other" topMargin />
             <ProfileOption 
               icon="help-circle-outline" 
               title="Support & Feedback" 
@@ -149,3 +139,10 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+const SectionHeader = ({ title, topMargin = false }) => (
+  <Text className={`text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mb-4 ml-1 ${topMargin ? 'mt-6' : ''}`}>
+    {title}
+  </Text>
+);
+

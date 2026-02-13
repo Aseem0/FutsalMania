@@ -25,7 +25,7 @@ export default function SelectionCard({
     );
   }
 
-  // Default Card style (used for positions)
+  // Default Card style
   return (
     <TouchableOpacity
       onPress={onPress}

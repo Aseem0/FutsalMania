@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   Image,
   StatusBar,
@@ -13,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import ProfileInput from '../../components/ProfileInput';
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
@@ -23,26 +23,9 @@ export default function PersonalInfoScreen() {
     phone: '+977 9800000000',
   });
 
-  const InputField = ({ label, value, onChangeText, icon, keyboardType = 'default' }) => (
-    <View className="mb-6">
-      <Text className="text-[#A1A1AA] text-xs font-bold uppercase tracking-widest mb-2 ml-1">
-        {label}
-      </Text>
-      <View className="flex-row items-center bg-[#121212] border border-[#1F1F1F] rounded-xl px-4 h-14">
-        <View style={{ marginRight: 12 }}>
-          <MaterialCommunityIcons name={icon} size={20} color="#FFB300" />
-        </View>
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          className="flex-1 text-white text-base"
-          placeholderTextColor="#3F3F46"
-          keyboardType={keyboardType}
-          style={{ marginLeft: 4 }}
-        />
-      </View>
-    </View>
-  );
+  const updateField = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-black text-white">
@@ -55,12 +38,11 @@ export default function PersonalInfoScreen() {
         <View className="flex-1 max-w-md mx-auto w-full border-x border-[#1F1F1F]">
           {/* Header */}
           <View className="bg-black/90 px-4 py-4 border-b border-[#1F1F1F]">
-            <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
               <TouchableOpacity onPress={() => router.back()} className="p-2">
                 <MaterialCommunityIcons name="chevron-left" size={28} color="#ffffff" />
               </TouchableOpacity>
-              <Text className="text-xl font-bold text-white">Personal Information</Text>
-              <View className="w-10" />
+              <Text className="text-xl font-bold text-white ml-2">Personal Information</Text>
             </View>
           </View>
 
@@ -88,31 +70,35 @@ export default function PersonalInfoScreen() {
 
             {/* Form Fields */}
             <View>
-              <InputField 
+              <ProfileInput 
                 label="Full Name"
                 value={formData.fullName}
-                onChangeText={(text) => setFormData({...formData, fullName: text})}
+                onChangeText={(text) => updateField('fullName', text)}
                 icon="account-outline"
+                placeholder="Enter your full name"
               />
-              <InputField 
+              <ProfileInput 
                 label="Email Address"
                 value={formData.email}
-                onChangeText={(text) => setFormData({...formData, email: text})}
+                onChangeText={(text) => updateField('email', text)}
                 icon="email-outline"
                 keyboardType="email-address"
+                placeholder="Enter your email"
               />
-              <InputField 
+              <ProfileInput 
                 label="Phone Number"
                 value={formData.phone}
-                onChangeText={(text) => setFormData({...formData, phone: text})}
+                onChangeText={(text) => updateField('phone', text)}
                 icon="phone-outline"
                 keyboardType="phone-pad"
+                placeholder="Enter your phone number"
               />
-              <InputField 
+              <ProfileInput 
                 label="Location"
                 value={formData.location}
-                onChangeText={(text) => setFormData({...formData, location: text})}
+                onChangeText={(text) => updateField('location', text)}
                 icon="map-marker-outline"
+                placeholder="Enter your location"
               />
             </View>
 
@@ -120,6 +106,7 @@ export default function PersonalInfoScreen() {
             <TouchableOpacity 
               className="bg-[#FFB300] h-14 rounded-2xl items-center justify-center mt-6"
               onPress={() => router.back()}
+              activeOpacity={0.8}
             >
               <Text className="text-black font-bold text-lg uppercase tracking-wider">Save Changes</Text>
             </TouchableOpacity>
@@ -129,3 +116,4 @@ export default function PersonalInfoScreen() {
     </SafeAreaView>
   );
 }
+

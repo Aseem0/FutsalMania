@@ -58,6 +58,7 @@ export default function HomeScreen() {
           <View className="px-5">
             <View className="flex-row gap-3 mb-3">
               <TouchableOpacity 
+                onPress={() => router.push('/host-game')}
                 className="flex-1 flex-col gap-3 rounded-xl border border-[#1F1F1F] bg-[#121212] p-5"
                 activeOpacity={0.95}
               >

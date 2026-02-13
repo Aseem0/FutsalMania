@@ -5,16 +5,15 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import ProfileOption from '../../components/ProfileOption';
 
 export default function PrivacySettingsScreen() {
   const router = useRouter();
   
-  // Example states for toggles
   const [settings, setSettings] = useState({
     pushNotifications: true,
     emailUpdates: false,
@@ -25,32 +24,6 @@ export default function PrivacySettingsScreen() {
   const toggleSetting = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
-
-  const SettingItem = ({ icon, title, subtitle, type = 'link', value, onValueChange }) => (
-    <TouchableOpacity 
-      activeOpacity={type === 'link' ? 0.7 : 1}
-      className="flex-row items-center p-4 mb-3 rounded-xl border border-[#1F1F1F] bg-[#121212]"
-    >
-      <View className="h-10 w-10 rounded-full items-center justify-center bg-black/50 mr-4">
-        <MaterialCommunityIcons name={icon} size={22} color="#FFB300" />
-      </View>
-      <View className="flex-1">
-        <Text className="text-white font-semibold text-base">{title}</Text>
-        {subtitle && <Text className="text-[#A1A1AA] text-xs">{subtitle}</Text>}
-      </View>
-      
-      {type === 'toggle' ? (
-        <Switch
-          trackColor={{ false: '#1F1F1F', true: '#FFB300' }}
-          thumbColor={value ? '#ffffff' : '#A1A1AA'}
-          onValueChange={onValueChange}
-          value={value}
-        />
-      ) : (
-        <MaterialCommunityIcons name="chevron-right" size={20} color="#3F3F46" />
-      )}
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -73,8 +46,8 @@ export default function PrivacySettingsScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Notifications Section */}
-          <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mb-4 ml-1">Notifications</Text>
-          <SettingItem 
+          <SectionHeader title="Notifications" />
+          <ProfileOption 
             icon="bell-outline" 
             title="Push Notifications" 
             subtitle="Get alerts for match invites"
@@ -82,7 +55,7 @@ export default function PrivacySettingsScreen() {
             value={settings.pushNotifications}
             onValueChange={() => toggleSetting('pushNotifications')}
           />
-          <SettingItem 
+          <ProfileOption 
             icon="email-outline" 
             title="Email Updates" 
             subtitle="Weekly newsletters and news"
@@ -92,8 +65,8 @@ export default function PrivacySettingsScreen() {
           />
 
           {/* Security Section */}
-          <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mt-6 mb-4 ml-1">Security</Text>
-          <SettingItem 
+          <SectionHeader title="Security" topMargin />
+          <ProfileOption 
             icon="fingerprint" 
             title="Biometric Login" 
             subtitle="Use Touch ID or Face ID"
@@ -101,15 +74,15 @@ export default function PrivacySettingsScreen() {
             value={settings.biometricLogin}
             onValueChange={() => toggleSetting('biometricLogin')}
           />
-          <SettingItem 
+          <ProfileOption 
             icon="lock-reset" 
             title="Change Password" 
             subtitle="Update your account password"
           />
 
           {/* Privacy Section */}
-          <Text className="text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mt-6 mb-4 ml-1">Privacy</Text>
-          <SettingItem 
+          <SectionHeader title="Privacy" topMargin />
+          <ProfileOption 
             icon="eye-outline" 
             title="Public Profile" 
             subtitle="Allow others to see your stats"
@@ -117,15 +90,20 @@ export default function PrivacySettingsScreen() {
             value={settings.publicProfile}
             onValueChange={() => toggleSetting('publicProfile')}
           />
-          <SettingItem 
+          <ProfileOption 
             icon="shield-account-outline" 
             title="Blocked Users" 
             subtitle="Manage people you've blocked"
           />
-
-          
         </ScrollView>
       </View>
     </SafeAreaView>
   );
 }
+
+const SectionHeader = ({ title, topMargin = false }) => (
+  <Text className={`text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mb-4 ml-1 ${topMargin ? 'mt-6' : ''}`}>
+    {title}
+  </Text>
+);
+
