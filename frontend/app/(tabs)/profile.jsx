@@ -126,6 +126,7 @@ export default function ProfileScreen() {
             <ProfileOption 
               icon="help-circle-outline" 
               title="Support & Feedback" 
+              onPress={() => router.push('/support-feedback')}
             />
             <ProfileOption 
               icon="logout-variant" 
