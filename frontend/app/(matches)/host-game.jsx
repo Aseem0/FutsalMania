@@ -96,7 +96,12 @@ export default function HostGameScreen() {
               onSelect={(arena) => setGameData({ ...gameData, arena })} 
             />
           )}
-          {currentStep === 2 && <DetailsStep />}
+          {currentStep === 2 && (
+            <DetailsStep 
+              details={gameData.details}
+              onUpdate={(details) => setGameData({ ...gameData, details: { ...gameData.details, ...details } })}
+            />
+          )}
           {currentStep === 3 && <SettingsStep />}
           {currentStep === 4 && <ReviewStep />}
         </View>
@@ -105,9 +110,13 @@ export default function HostGameScreen() {
         <View className="px-6 py-6 bg-black/80 border-t border-white/5">
           <TouchableOpacity 
             onPress={handleNext}
-            disabled={currentStep === 1 && !gameData.arena}
+            disabled={
+              (currentStep === 1 && !gameData.arena) ||
+              (currentStep === 2 && (!gameData.details.name || !gameData.details.date || !gameData.details.time))
+            }
             className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-              currentStep === 1 && !gameData.arena ? 'bg-zinc-800' : 'bg-amber-400'
+              ((currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.name || !gameData.details.date || !gameData.details.time))) 
+                ? 'bg-zinc-800' : 'bg-amber-400'
             }`}
             activeOpacity={0.9}
           >

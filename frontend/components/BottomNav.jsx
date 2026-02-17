@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BottomNav = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   const navItems = [
     { name: 'Home', icon: 'home', activeIcon: 'home', path: '/(tabs)' },
@@ -20,7 +22,10 @@ const BottomNav = () => {
   };
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pb-3 pt-3">
+    <View 
+      className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pt-3"
+      style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+    >
       <View className="flex-row justify-between items-end">
         {navItems.slice(0, 2).map((item) => (
           <TouchableOpacity 
