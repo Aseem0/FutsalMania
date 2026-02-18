@@ -49,4 +49,13 @@ export const fetchUserProfile = () => {
   return api.get("/users/profile");
 };
 
+// Match Details & Join
+export const fetchMatchById = (matchId) => {
+  return api.get(`/matches/${matchId}`);
+};
+
+export const joinMatch = (matchId) => {
+  return api.post(`/matches/${matchId}/join`);
+};
+
 export default api;

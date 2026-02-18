@@ -206,8 +206,13 @@ export default function ExploreScreen() {
               </View>
 
               {filteredMatches.map((match) => (
-                <View
+                <TouchableOpacity
                   key={match.id}
+                  activeOpacity={0.9}
+                  onPress={() => router.push({
+                    pathname: "/(matches)/match-details",
+                    params: { id: match.id }
+                  })}
                   className="relative w-full h-64 rounded-3xl overflow-hidden border border-white/5 shadow-2xl"
                 >
                   <Image
@@ -294,12 +299,9 @@ export default function ExploreScreen() {
                       </View>
                     </View>
 
-                    {/* Join Button Placeholder */}
-                    <TouchableOpacity className="absolute bottom-6 right-6 w-12 h-12 bg-amber-400 rounded-2xl items-center justify-center shadow-lg active:scale-95">
-                      <MaterialIcons name="add" size={28} color="black" />
-                    </TouchableOpacity>
+                    {/* Join Button Placeholder - Removed since the whole card is now clickable */}
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           )}

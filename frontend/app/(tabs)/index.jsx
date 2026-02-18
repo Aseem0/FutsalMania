@@ -178,7 +178,15 @@ export default function HomeScreen() {
                 </View>
               ) : (
                 matches.slice(0, 2).map((match) => (
-                  <View key={match.id} className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]">
+                  <TouchableOpacity 
+                    key={match.id} 
+                    activeOpacity={0.9}
+                    onPress={() => router.push({
+                      pathname: "/(matches)/match-details",
+                      params: { id: match.id }
+                    })}
+                    className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]"
+                  >
                     <Image
                       source={{ uri: match.arena?.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop' }}
                       className="absolute inset-0 w-full h-full"
@@ -232,7 +240,7 @@ export default function HomeScreen() {
                         </View>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))
               )}
             </View>

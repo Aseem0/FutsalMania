@@ -29,5 +29,9 @@ Match.belongsTo(User, { foreignKey: "hostId", as: "host" });
 Arena.hasMany(Match, { foreignKey: "arenaId" });
 Match.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
+// Many-to-Many for Players joining matches
+User.belongsToMany(Match, { through: "MatchPlayers", as: "playingMatches", foreignKey: "userId" });
+Match.belongsToMany(User, { through: "MatchPlayers", as: "players", foreignKey: "matchId" });
+
 export { sequelize, User, Arena, Match };
 export default { sequelize, User, Arena, Match };

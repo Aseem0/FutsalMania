@@ -117,8 +117,13 @@ export default function AllActivityScreen() {
               </Text>
 
               {matches.map((match) => (
-                <View
+                <TouchableOpacity
                   key={match.id}
+                  activeOpacity={0.9}
+                  onPress={() => router.push({
+                    pathname: "/(matches)/match-details",
+                    params: { id: match.id }
+                  })}
                   className="relative w-full h-64 rounded-3xl overflow-hidden border border-white/5 shadow-2xl"
                 >
                   <Image
@@ -205,7 +210,7 @@ export default function AllActivityScreen() {
                       </View>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           )}

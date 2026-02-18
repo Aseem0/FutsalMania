@@ -4,7 +4,12 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "jsx": "react-native"
+    "jsx": "react-jsx",
+    "moduleResolution": "node"
   },
-  "exclude": ["node_modules", ".expo", "export"]
+  "exclude": [
+    "node_modules",
+    ".expo",
+    "export"
+  ]
 }
