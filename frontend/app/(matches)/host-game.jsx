@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { createMatch } from "../../services/api";
+import { Alert } from "react-native";
 
 // Step Components
 import ArenaStep from "../../components/host-game/ArenaStep";
@@ -15,6 +17,7 @@ const TOTAL_STEPS = 4;
 export default function HostGameScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [gameData, setGameData] = useState({
     arena: null,
     details: { name: '', date: '', time: '' },
@@ -33,13 +36,36 @@ export default function HostGameScreen() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     } else {
       // Final Post Logic
-      console.log("Posting Game:", gameData);
-      router.replace('/(tabs)');
+      try {
+        setLoading(true);
+        const matchPayload = {
+          arenaId: gameData.arena.id,
+          date: gameData.details.date,
+          time: gameData.details.time,
+          format: gameData.settings.format,
+          maxPlayers: gameData.settings.maxPlayers,
+          skillLevel: gameData.settings.skillLevel,
+          price: gameData.settings.price,
+        };
+
+        const response = await createMatch(matchPayload);
+        
+        if (response.status === 201) {
+          Alert.alert("Success", "Your game has been hosted successfully!");
+          router.replace('/(tabs)');
+        }
+      } catch (error) {
+        console.error("Error posting match:", error);
+        const errorMessage = error.response?.data?.message || "Something went wrong while hosting the game.";
+        Alert.alert("Failed to host game", errorMessage);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -121,19 +147,20 @@ export default function HostGameScreen() {
           <TouchableOpacity 
             onPress={handleNext}
             disabled={
+              loading ||
               (currentStep === 1 && !gameData.arena) ||
               (currentStep === 2 && (!gameData.details.date || !gameData.details.time))
             }
             className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-              ((currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.date || !gameData.details.time))) 
+              (loading || (currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.date || !gameData.details.time))) 
                 ? 'bg-zinc-800' : 'bg-amber-400'
             }`}
             activeOpacity={0.9}
           >
             <Text className={`font-black tracking-widest ${
-              currentStep === 1 && !gameData.arena ? 'text-white/20' : 'text-black'
+              (loading || currentStep === 1 && !gameData.arena) ? 'text-white/20' : 'text-black'
             }`}>
-              {currentStep === TOTAL_STEPS ? "POST GAME" : "NEXT STEP"}
+              {loading ? "POSTING..." : (currentStep === TOTAL_STEPS ? "POST GAME" : "NEXT STEP")}
             </Text>
             <MaterialIcons 
               name={currentStep === TOTAL_STEPS ? "check" : "arrow-forward"} 

@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize";
 import createUserModel from "./userModel.js";
 import createArenaModel from "./arenaModel.js";
+import createMatchModel from "./matchModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -19,9 +20,14 @@ const sequelize = new Sequelize(
 // Initialize models
 const User = createUserModel(sequelize);
 const Arena = createArenaModel(sequelize);
+const Match = createMatchModel(sequelize);
 
-// Set up associations here if needed in the future
-// Example: User.hasMany(Arena);
+// Set up associations
+User.hasMany(Match, { foreignKey: "hostId", as: "hostedMatches" });
+Match.belongsTo(User, { foreignKey: "hostId", as: "host" });
 
-export { sequelize, User, Arena };
-export default { sequelize, User, Arena };
+Arena.hasMany(Match, { foreignKey: "arenaId" });
+Match.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
+export { sequelize, User, Arena, Match };
+export default { sequelize, User, Arena, Match };

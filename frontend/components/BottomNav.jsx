@@ -23,7 +23,7 @@ const BottomNav = () => {
 
   return (
     <View 
-      className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-[#1F1F1F] pt-3"
+      className="absolute bottom-0 left-0 right-0 max-w-md mx-auto w-full bg-black/95 border-t border-x border-[#1F1F1F] pt-3"
       style={{ paddingBottom: Math.max(insets.bottom, 12) }}
     >
       <View className="flex-row justify-between items-end">

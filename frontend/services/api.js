@@ -29,4 +29,16 @@ export const fetchArenas = () => {
   return api.get("/arenas");
 };
 
+export const createMatch = (matchData) => {
+  return api.post("/matches", matchData);
+};
+
+export const fetchMatches = () => {
+  return api.get("/matches");
+};
+
+export const fetchMyMatches = () => {
+  return api.get("/matches/my");
+};
+
 export default api;

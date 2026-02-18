@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,13 +6,47 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { fetchMyMatches } from "../../services/api";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadMatches();
+  }, []);
+
+  const loadMatches = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchMyMatches();
+      setMatches(response.data);
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) return "TODAY";
+    
+    // Check if tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    if (date.toDateString() === tomorrow.toDateString()) return "TOMORROW";
+
+    return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }).toUpperCase();
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
@@ -72,6 +106,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity 
+                onPress={() => router.push('/explore')}
                 className="flex-1 flex-col gap-3 rounded-xl border border-[#1F1F1F] bg-[#121212] p-5"
                 activeOpacity={0.95}
               >
@@ -117,104 +152,92 @@ export default function HomeScreen() {
           {/* Sessions */}
           <View className="mt-10">
             <View className="flex-row items-center justify-between px-5 mb-4">
-              <Text className="text-lg font-bold text-white">Scheduled Sessions</Text>
-              <TouchableOpacity>
+              <Text className="text-lg font-bold text-white">Your Activities</Text>
+              <TouchableOpacity onPress={() => router.push('/(matches)/all-activity')}>
                 <Text className="text-xs font-semibold text-[#FFB300] uppercase tracking-wider">
                   ALL ACTIVITY
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <View className="px-5 gap-4">
-              {/* Session Card 1 */}
-              <View className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]">
-                <Image
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuATDOIlUYY68EWd7ryupg1pRSygdCIgUkuy1ZUYPHL2Zd5ad1WSJdqMFzR3SqhZD6UGhswmAt_I2pOj02sEZm1QgSyBuDZgmRhCakhut0IZiLn1qROJ6MuO2p5BRhAabuEPUijoN7X5B28nxDbbyzNUv2Zkr7oqrKf-vEOnqMQlQ-uui5552IwOiSMlVbNXam4M-_MxEJ_1_Fl5so5SiAn2R9yyRpOLVb5gdd2R8ODKItDLs-mK10igjPFQQNGzqfgPwt6SkOyQkTl9' }}
-                  className="absolute inset-0 w-full h-full"
-                  resizeMode="cover"
-                />
-                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                
-                <View className="relative h-full flex-col justify-between p-5">
-                  <View className="flex-row justify-between items-start">
-                    <View>
-                      <Text className="font-bold text-lg text-white">Arena One Sports</Text>
-                      <Text className="text-xs text-white/80 font-medium">London • 2.4 miles away</Text>
-                    </View>
-                    <View className="px-2 py-1 rounded border border-[#1F1F1F] bg-black/60">
-                      <Text className="text-[10px] font-bold text-white">TOMORROW</Text>
-                    </View>
-                  </View>
-
-                  <View className="gap-4">
-                    <View className="flex-row items-center gap-2">
-                      <MaterialCommunityIcons name="clock-outline" size={16} color="#FFB300" />
-                      <Text className="text-sm text-white font-semibold">19:00 - 20:30</Text>
-                    </View>
-
-                    <View className="gap-2">
-                      <View className="flex-row justify-between">
-                        <Text className="text-[11px] font-bold uppercase text-white/70">
-                          JOINED SQUAD
-                        </Text>
-                        <Text className="text-[11px] font-bold uppercase text-[#FFB300]">
-                          8/10
-                        </Text>
-                      </View>
-                      <View className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                        <View className="bg-[#FFB300] h-full w-[80%]" />
-                      </View>
-                    </View>
-                  </View>
+            <View className="px-5 gap-4 pb-10">
+              {loading && matches.length === 0 ? (
+                <View className="py-20 items-center justify-center">
+                  <ActivityIndicator color="#FFB300" />
                 </View>
-              </View>
-
-              {/* Session Card 2 */}
-              <View className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]">
-                <Image
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXSlGGSZCIbzoGVWvk5mAifbMTvc_JOz5OG1ZJkUBCYnfR26xTMvQiMnJdWChYZX9ZMiRiXgwAhtkvi1LlXvf7mFVfIL3hXMB9lP8lyyGaWZvQ7xgjnYLi7GhCEZpNcFRPNC2EEpxDq2ZkASSjAub0vrEKfmWAXnbIrU51MJLMQQowhUFWoRUcyHhZVgmHoHBUMUv5p3fgh3rMg3p6nUkIv3AK3nsfqZyHZhFnaU8g939BuSMcox9ugH6AuPQ44pUOjEAGN7WsCw91' }}
-                  className="absolute inset-0 w-full h-full"
-                  resizeMode="cover"
-                />
-                <View className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                
-                <View className="relative h-full flex-col justify-between p-5">
-                  <View className="flex-row justify-between items-start">
-                    <View>
-                      <Text className="font-bold text-lg text-white">Downtown Futsal</Text>
-                      <Text className="text-xs text-white/80 font-medium">London • 1.1 miles away</Text>
-                    </View>
-                    <View className="px-2 py-1 rounded border border-[#1F1F1F] bg-black/60">
-                      <Text className="text-[10px] font-bold text-white">FRI 22</Text>
-                    </View>
-                  </View>
-
-                  <View className="gap-4">
-                    <View className="flex-row items-center gap-2">
-                      <MaterialCommunityIcons name="clock-outline" size={16} color="#FFB300" />
-                      <Text className="text-sm text-white font-semibold">21:00 - 22:00</Text>
-                    </View>
-
-                    <View className="gap-2">
-                      <View className="flex-row justify-between">
-                        <Text className="text-[11px] font-bold uppercase text-white/70">
-                          JOINED SQUAD
-                        </Text>
-                        <Text className="text-[11px] font-bold uppercase text-[#FFB300]">
-                          5/10
-                        </Text>
-                      </View>
-                      <View className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                        <View className="bg-[#FFB300] h-full w-[50%]" />
-                      </View>
-                    </View>
-                  </View>
+              ) : matches.length === 0 ? (
+                <View className="py-20 items-center justify-center border border-[#1F1F1F] rounded-xl bg-[#111]">
+                  <MaterialCommunityIcons name="soccer-field" size={48} color="rgba(255,255,255,0.1)" />
+                  <Text className="text-white/40 mt-4 font-bold">No sessions scheduled yet</Text>
+                  <TouchableOpacity 
+                    onPress={() => router.push('/host-game')}
+                    className="mt-6 bg-amber-400 px-6 py-2 rounded-lg"
+                  >
+                    <Text className="text-black font-black text-xs">HOST NOW</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
+              ) : (
+                matches.slice(0, 2).map((match) => (
+                  <View key={match.id} className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]">
+                    <Image
+                      source={{ uri: match.arena?.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop' }}
+                      className="absolute inset-0 w-full h-full"
+                      resizeMode="cover"
+                    />
+                    <View className="absolute inset-0 bg-black/60" />
+                    
+                    <View className="relative h-full flex-col justify-between p-5">
+                      <View className="flex-row justify-between items-start">
+                        <View className="flex-1 mr-2">
+                          <Text className="font-bold text-lg text-white" numberOfLines={1}>
+                            {match.arena?.name || "Premium Futsal"}
+                          </Text>
+                          <Text className="text-xs text-white/80 font-medium" numberOfLines={1}>
+                            {match.arena?.location || "Kathmandu"} • Hosted by {match.host?.username || "Player"}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-1 rounded border border-[#1F1F1F] bg-black/60">
+                          <Text className="text-[10px] font-bold text-white">{formatDate(match.date)}</Text>
+                        </View>
+                      </View>
+
+                      <View className="gap-4">
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center gap-2">
+                            <MaterialCommunityIcons name="clock-outline" size={16} color="#FFB300" />
+                            <Text className="text-sm text-white font-semibold">{match.time}</Text>
+                          </View>
+                          <View className="px-2 py-0.5 rounded-full bg-amber-400/20">
+                            <Text className="text-[10px] font-black text-amber-400 uppercase tracking-tighter">
+                              {match.format} • {match.skillLevel}
+                            </Text>
+                          </View>
+                        </View>
+
+                        <View className="gap-2">
+                          <View className="flex-row justify-between">
+                            <Text className="text-[11px] font-bold uppercase text-white/70">
+                              JOINED SQUAD
+                            </Text>
+                            <Text className="text-[11px] font-bold uppercase text-[#FFB300]">
+                              {match.currentPlayers}/{match.maxPlayers}
+                            </Text>
+                          </View>
+                          <View className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                            <View 
+                              className="bg-[#FFB300] h-full" 
+                              style={{ width: `${(match.currentPlayers / match.maxPlayers) * 100}%` }} 
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              )}
             </View>
           </View>
         </ScrollView>
-
       </View>
     </SafeAreaView>
   );
