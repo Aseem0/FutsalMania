@@ -1,43 +1,59 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { fetchArenas } from '../../services/api';
 
-const ARENAS = [
-  {
-    id: 1,
-    name: "Downtown Futsal Center",
-    rating: 4.8,
-    location: "12th Avenue, Midtown",
-    distance: "0.8 km away",
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5s5OVWvPW6i7rcLaonc8OtGaKaoMNNbdPzoClC2L3Taa2_rPfLin9hfADNaGr8L8KElQ39WL1oV_cpASqSeE2BqAopIyUSKJ46hrpM0OpuXIGZLQ4q2eDuSI9X91go7ZCJ_sSN4UcnXcjduKILuSD9dwOGjy6CPF96XcPcRBJ2_MrykmdjVEJmIgKZyHUsP0rklE6wImRcaCaUKbmyHFeY9rFhWU2neavQEG5AgrI9Ql307xWP7hypgED7RHq5nCwPywlm_dIyjAI'
-  },
-  {
-    id: 2,
-    name: "Elite Sports Arena",
-    rating: 4.5,
-    location: "Oak Ridge Business Park",
-    distance: "2.4 km away",
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDwkxgsj2STX7v7Sn13RcY-H18cRCn566Xkbe1_NlhL-8BNYg-Manir-ScfX7cskWNgwiRx9SICOsSAkRKS1XyrzkDNy55wpmpju2j2CKhxNl-3Ugtdg_nHALAV1IJK-jKn7q9LgRYxzqKJc1Qs0gxMc2etpctt6_Zz6MZxsyT1jECZmbD03LsF3P810FT65X0GCzIUsX34JoP3QO-LzHhY4jRp2FbRCf5j1J9JbcyJKgV-zp6oMSCUFq-yyGnfHp9dQU6C7PfsTlJM'
-  },
-  {
-    id: 3,
-    name: "The Cage Stadium",
-    rating: 4.2,
-    location: "Sunset Boulevard, East Side",
-    distance: "3.1 km away",
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCuQv2NugZlsuE363SH5lAYknHJSe0mzyGA4eSHkHQIm4V5BF2sT8qgc9uWUTZj9HebtYmNBqMG7RbkzTp4-wiYLbKvxALLA_d_eOADQ-HKkVgi2ej6ueEDNC0-GziBYOzqrswGKkPvvXcaVWHxj5rxG-SPFezZrKGV43sfFt-9S5dwRJUuI9XyNnlFSmn6RALnpGWda1-3ieX5LKy79ZKhCwsOnsF6ciCHzKNqL58HnZZZxCM1tJkXWmjicC1uo27w8ZyZgeF2tFqJ'
-  },
-  {
-    id: 4,
-    name: "Urban Kick Zone",
-    rating: 4.7,
-    location: "Industrial District",
-    distance: "5.0 km away",
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCypEv0RLqtSi_QOv_SvRCCbsEp61NzqbQaiSQrcRVEHWwaKzooufWjn5B45PF-Nw97b0PSrUttoEi5fFd9pnTlI8mgJWaxKk8HGZyztLywEIBomzdZLvTUEyhPePIefxG76ErwK6-Ckd8HNXorId51ujBJN5qlL5iS0cqocyW7vGkZIYjCoinezTeDa7wss_KbfIRQ-zKkTIhf3gZnpjO-_pyx4CkX-iqG3TJizUGEXch_uADI_wBFeaYXyX9echht4r6mLFNXHFkX'
-  }
-];
-
+/**
+ * ArenaStep Component
+ * Allows users to browse and select a futsal arena from the backend.
+ */
 export default function ArenaStep({ selectedArena, onSelect }) {
+  const [arenas, setArenas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadArenas();
+  }, []);
+
+  const loadArenas = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchArenas();
+      setArenas(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to load arenas:", err);
+      setError("Unable to load arenas. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#fbbf24" />
+        <Text className="text-white/40 mt-4 font-bold">Finding best courts...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center px-10">
+        <MaterialIcons name="error-outline" size={48} color="rgba(255,255,255,0.2)" />
+        <Text className="text-white/60 text-center mt-4 font-bold">{error}</Text>
+        <TouchableOpacity 
+          onPress={loadArenas}
+          className="mt-6 bg-amber-400 px-6 py-3 rounded-xl"
+        >
+          <Text className="text-black font-black uppercase text-xs">Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1 px-6 pb-20" showsVerticalScrollIndicator={false}>
       <View className="mt-4">
@@ -57,7 +73,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
         />
         <TextInput
           className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white"
-          placeholder="Search 30+ arenas..."
+          placeholder="Search arenas..."
           placeholderTextColor="rgba(255,255,255,0.3)"
           style={{ outlineStyle: 'none' }}
         />
@@ -65,17 +81,18 @@ export default function ArenaStep({ selectedArena, onSelect }) {
 
       {/* Arena List */}
       <View className="gap-4">
-        {ARENAS.map((arena) => (
+        {arenas.map((arena) => (
           <TouchableOpacity 
             key={arena.id}
             onPress={() => onSelect(arena)}
+            activeOpacity={0.8}
             className={`p-3 rounded-2xl flex-row gap-4 items-center border ${
               selectedArena?.id === arena.id 
                 ? "bg-amber-400/5 border-amber-400" 
                 : "bg-[#111] border-white/5"
             }`}
           >
-            <View className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-900">
+            <View className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
               <Image
                 source={{ uri: arena.image }}
                 className="w-full h-full"
@@ -114,7 +131,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
 
         <View className="py-8">
           <Text className="text-white/20 text-[10px] uppercase tracking-[3px] font-black text-center">
-            Showing {ARENAS.length} of 32 venues
+            {arenas.length} venues available
           </Text>
         </View>
       </View>

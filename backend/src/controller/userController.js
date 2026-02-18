@@ -1,5 +1,5 @@
 import { generateAccessToken, generateRefreshToken } from "../../auth/auth.js";
-import { User } from "../db/dbconnection.js";
+import { User } from "../model/index.js";
 import bcryptjs from "bcryptjs";
 
 export const registerController = async (req, res) => {

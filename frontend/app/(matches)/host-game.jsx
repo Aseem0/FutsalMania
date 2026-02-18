@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 // Step Components
 import ArenaStep from "../../components/host-game/ArenaStep";
 import DetailsStep from "../../components/host-game/DetailsStep";
-import SettingsStep from "../../components/host-game/SettingsStep";
+import GameSettings from "../../components/host-game/GameSettings";
 import ReviewStep from "../../components/host-game/ReviewStep";
 
 const TOTAL_STEPS = 4;
@@ -18,7 +18,7 @@ export default function HostGameScreen() {
   const [gameData, setGameData] = useState({
     arena: null,
     details: { name: '', date: '', time: '' },
-    settings: { skillLevel: 'Intermediate', price: 0, maxPlayers: 10 },
+    settings: { skillLevel: 'Intermediate', format: '5v5', maxPlayers: 10, price: 0 },
   });
 
   const handleBack = () => {
@@ -102,8 +102,18 @@ export default function HostGameScreen() {
               onUpdate={(details) => setGameData({ ...gameData, details: { ...gameData.details, ...details } })}
             />
           )}
-          {currentStep === 3 && <SettingsStep />}
-          {currentStep === 4 && <ReviewStep />}
+          {currentStep === 3 && (
+            <GameSettings 
+              settings={gameData.settings}
+              onUpdate={(settings) => setGameData({ ...gameData, settings: { ...gameData.settings, ...settings } })}
+            />
+          )}
+          {currentStep === 4 && (
+            <ReviewStep 
+              gameData={gameData}
+              onEdit={(step) => setCurrentStep(step)}
+            />
+          )}
         </View>
 
         {/* Bottom Fixed Section */}
@@ -112,10 +122,10 @@ export default function HostGameScreen() {
             onPress={handleNext}
             disabled={
               (currentStep === 1 && !gameData.arena) ||
-              (currentStep === 2 && (!gameData.details.name || !gameData.details.date || !gameData.details.time))
+              (currentStep === 2 && (!gameData.details.date || !gameData.details.time))
             }
             className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-              ((currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.name || !gameData.details.date || !gameData.details.time))) 
+              ((currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.date || !gameData.details.time))) 
                 ? 'bg-zinc-800' : 'bg-amber-400'
             }`}
             activeOpacity={0.9}

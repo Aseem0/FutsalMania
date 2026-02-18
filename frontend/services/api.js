@@ -25,4 +25,8 @@ export const login = (userData) => {
   return api.post("/login", userData);
 };
 
+export const fetchArenas = () => {
+  return api.get("/arenas");
+};
+
 export default api;

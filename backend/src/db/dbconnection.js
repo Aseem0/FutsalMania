@@ -1,20 +1,18 @@
-import { Sequelize } from "sequelize";
-import createUserModel from "../model/userModel.js";
-let User = null;
+import { sequelize } from "../model/index.js";
 
-export const dbConnection = async (database, username, password) => {
-  const sequelize = new Sequelize(database, username, password, {
-    host: process.env.DB_HOST || "localhost",
-    dialect: process.env.DB_DIALECT || "postgres",
-  });
+/**
+ * Authenticates and establishes the database connection.
+ */
+export const dbConnection = async () => {
   try {
     await sequelize.authenticate();
-    User = await createUserModel(sequelize);
+    console.log("✅ Database connection established successfully.");
+    
+    // Sync models
     await sequelize.sync({ force: false });
-    console.log("Connection has been established successfully.");
+    console.log("✅ Models synced with database.");
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    console.error("❌ Unable to connect to the database:", error);
+    process.exit(1); // Exit if connection fails
   }
 };
-
-export { User };

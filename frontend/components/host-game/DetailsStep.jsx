@@ -27,23 +27,8 @@ export default function DetailsStep({ details, onUpdate }) {
       <View className="mb-8">
         <Text className="text-2xl font-black text-white mb-2">Game Details</Text>
         <Text className="text-white/50 text-sm font-medium">
-          Enter the specifics for your match.
+          Choose a date and time for your match.
         </Text>
-      </View>
-
-      {/* Game Name */}
-      <View className="mb-8">
-        <Text className="text-white/40 text-[10px] font-black uppercase tracking-[2px] mb-3 ml-1">
-          Game Title
-        </Text>
-        <TextInput
-          className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-5 text-md text-white font-bold"
-          placeholder="e.g. Friendly 5v5 Match"
-          placeholderTextColor="rgba(255,255,255,0.2)"
-          value={details.name}
-          onChangeText={(val) => onUpdate({ name: val })}
-          style={{ outlineStyle: 'none' }}
-        />
       </View>
 
       {/* Date Selector */}
