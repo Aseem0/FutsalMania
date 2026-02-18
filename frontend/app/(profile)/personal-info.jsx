@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,24 +8,98 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import ProfileInput from '../../components/ProfileInput';
+import { fetchUserProfile, updateProfilePicture } from "../../services/api";
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: 'Aseem Rai',
-    email: 'aseem.rai@example.com',
-    location: 'Kathmandu, Nepal',
-    phone: '+977 9800000000',
+    username: '',
+    email: '',
+    location: 'Kathmandu, Nepal', // Static for now as per schema
+    phone: '+977 9800000000',     // Static for now as per schema
+    profilePicture: null
   });
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchUserProfile();
+      const user = response.data;
+      setFormData({
+        username: user.username,
+        email: user.email,
+        location: 'Kathmandu, Nepal',
+        phone: '+977 9800000000',
+        profilePicture: user.profilePicture
+      });
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      Alert.alert("Error", "Failed to load profile data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      handleUpdateAvatar(base64Image);
+    }
+  };
+
+  const handleUpdateAvatar = async (base64Image) => {
+    try {
+      setUploading(true);
+      await updateProfilePicture(base64Image);
+      setFormData(prev => ({ ...prev, profilePicture: base64Image }));
+      Alert.alert("Success", "Profile picture updated!");
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      Alert.alert("Error", "Failed to update profile picture.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator color="#FFB300" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-black text-white">
@@ -54,14 +128,23 @@ export default function PersonalInfoScreen() {
             {/* Profile Picture Section */}
             <View className="items-center mb-10">
               <View className="relative">
-                <View className="h-28 w-28 rounded-full overflow-hidden border-2 border-[#FFB300] bg-[#121212]">
-                  <Image 
-                    source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAp8uv1e1BERfNA1lgYs3CMdujbEPzlE_zcAFcsMrONKO5AoXuaeVfLOQFwqQ2VYTCyGPI_747tBOMcUE03hbmjiqBYNqOHXKF4lPN6fnGxwxJfP-sYRThu0ia7uMYJQlKR6BLgbTpWF_6s5PCbSKYwcUx8T2uwUtSMRTmn9pYBM0h1Ze_l9QL_U1q4eZd_9LzWpmOawBgvGuENm7Nez2rVyo9uVrvbQT-rzDS_3Fx4yNLVNmEq67bVXWcvgXU5dR9ouZSoaSWP4rw5' }}
-                    className="h-full w-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <TouchableOpacity className="absolute bottom-0 right-0 bg-[#FFB300] h-9 w-9 rounded-full items-center justify-center border-2 border-black">
+                <TouchableOpacity activeOpacity={0.9} onPress={pickImage} className="h-28 w-28 rounded-full overflow-hidden border-2 border-[#FFB300] bg-[#121212] items-center justify-center">
+                  {formData.profilePicture ? (
+                    <Image 
+                      source={{ uri: formData.profilePicture }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <MaterialCommunityIcons name="account" size={56} color="#333" />
+                  )}
+                  {uploading && (
+                    <View className="absolute inset-0 bg-black/40 items-center justify-center">
+                      <ActivityIndicator color="#FFB300" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage} className="absolute bottom-0 right-0 bg-[#FFB300] h-9 w-9 rounded-full items-center justify-center border-2 border-black">
                   <MaterialCommunityIcons name="camera-outline" size={18} color="black" />
                 </TouchableOpacity>
               </View>
@@ -72,8 +155,8 @@ export default function PersonalInfoScreen() {
             <View>
               <ProfileInput 
                 label="Full Name"
-                value={formData.fullName}
-                onChangeText={(text) => updateField('fullName', text)}
+                value={formData.username}
+                onChangeText={(text) => updateField('username', text)}
                 icon="account-outline"
                 placeholder="Enter your full name"
               />

@@ -3,7 +3,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "jsx": "react-native"
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".expo", "export"]
 }

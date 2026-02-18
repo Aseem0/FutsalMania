@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   StatusBar,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -17,6 +18,14 @@ export default function ExploreScreen() {
   const router = useRouter();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Search and Filter States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFormat, setSelectedFormat] = useState("All");
+  const [selectedSkill, setSelectedSkill] = useState("All");
+
+  const formats = ["All", "5v5", "6v6", "7v7"];
+  const skillLevels = ["All", "Beginner", "Intermediate", "Advanced"];
 
   useEffect(() => {
     loadMatches();
@@ -33,6 +42,20 @@ export default function ExploreScreen() {
       setLoading(false);
     }
   };
+
+  // Advanced Filtering Logic
+  const filteredMatches = useMemo(() => {
+    return matches.filter((match) => {
+      const matchesSearch = 
+        match.arena?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        match.arena?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesFormat = selectedFormat === "All" || match.format === selectedFormat;
+      const matchesSkill = selectedSkill === "All" || match.skillLevel === selectedSkill;
+
+      return matchesSearch && matchesFormat && matchesSkill;
+    });
+  }, [matches, searchQuery, selectedFormat, selectedSkill]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -53,15 +76,13 @@ export default function ExploreScreen() {
       <StatusBar barStyle="light-content" />
 
       <View className="flex-1 max-w-md mx-auto w-full border-x border-white/5">
-        {/* Header */}
-        <View className="px-6 pt-6 pb-6 bg-black border-b border-white/5">
-          <View className="flex-row items-center justify-between">
+        {/* Header Area with Search */}
+        <View className="px-6 pt-4 pb-4 bg-black">
+          <View className="flex-row items-center justify-between mb-6">
             <View className="w-10" />
-
             <Text className="text-xl font-black uppercase tracking-tight text-white">
               Explore Games
             </Text>
-
             <TouchableOpacity
               onPress={loadMatches}
               className="w-10 h-10 items-center justify-center rounded-full bg-[#111] border border-white/5"
@@ -73,10 +94,64 @@ export default function ExploreScreen() {
               />
             </TouchableOpacity>
           </View>
+
+          {/* Search Bar */}
+          <View className="flex-row items-center bg-[#111] border border-white/10 rounded-2xl px-4 py-3 mb-4">
+            <MaterialIcons name="search" size={20} color="#666" />
+            <TextInput
+              placeholder="Search Arenas or Locations..."
+              placeholderTextColor="#666"
+              className="flex-1 ml-3 text-white font-medium"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery("")}>
+                <MaterialIcons name="close" size={18} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Filters Row */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+            {/* Format Filters */}
+            <View className="flex-row border-r border-white/10 pr-4 mr-4 gap-2">
+              {formats.map((f) => (
+                <TouchableOpacity
+                  key={f}
+                  onPress={() => setSelectedFormat(f)}
+                  className={`px-4 py-2 rounded-full border ${
+                    selectedFormat === f ? "bg-amber-400 border-amber-400" : "bg-transparent border-white/10"
+                  }`}
+                >
+                  <Text className={`text-[10px] font-black uppercase ${selectedFormat === f ? "text-black" : "text-white/40"}`}>
+                    {f}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Skill Filters */}
+            <View className="flex-row gap-2">
+              {skillLevels.map((s) => (
+                <TouchableOpacity
+                  key={s}
+                  onPress={() => setSelectedSkill(s)}
+                  className={`px-4 py-2 rounded-full border ${
+                    selectedSkill === s ? "bg-amber-400 border-amber-400" : "bg-transparent border-white/10"
+                  }`}
+                >
+                  <Text className={`text-[10px] font-black uppercase ${selectedSkill === s ? "text-black" : "text-white/40"}`}>
+                    {s}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
         </View>
 
         <ScrollView
-          className="flex-1 px-5 pt-6"
+          className="flex-1 px-5 pt-4"
           showsVerticalScrollIndicator={false}
         >
           {loading && matches.length === 0 ? (
@@ -86,32 +161,51 @@ export default function ExploreScreen() {
                 Scouting the area...
               </Text>
             </View>
-          ) : matches.length === 0 ? (
+          ) : filteredMatches.length === 0 ? (
             <View className="py-20 items-center justify-center border border-[#1F1F1F] rounded-2xl bg-[#111] px-10">
               <MaterialCommunityIcons
-                name="soccer-field"
+                name="magnify-close"
                 size={64}
                 color="rgba(255,255,255,0.05)"
               />
               <Text className="text-white/60 mt-6 font-bold text-center">
-                No public matches found. Why not host one?
+                {searchQuery || selectedFormat !== "All" || selectedSkill !== "All" 
+                  ? "No games match your filters." 
+                  : "No public matches found. Why not host one?"}
               </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/host-game")}
-                className="mt-8 bg-amber-400 px-10 py-4 rounded-2xl"
-              >
-                <Text className="text-black font-black uppercase tracking-widest text-sm">
-                  Host Game
-                </Text>
-              </TouchableOpacity>
+              {(searchQuery || selectedFormat !== "All" || selectedSkill !== "All") && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchQuery("");
+                    setSelectedFormat("All");
+                    setSelectedSkill("All");
+                  }}
+                  className="mt-6"
+                >
+                  <Text className="text-amber-400 font-bold uppercase text-[10px] tracking-widest">
+                    Clear All Filters
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View className="gap-6 pb-20">
-              <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px] ml-1">
-                {matches.length} Public Sessions
-              </Text>
+              <View className="flex-row justify-between items-center ml-1">
+                <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px]">
+                  {filteredMatches.length} Public Sessions
+                </Text>
+                {(searchQuery || selectedFormat !== "All" || selectedSkill !== "All") && (
+                  <TouchableOpacity onPress={() => {
+                    setSearchQuery("");
+                    setSelectedFormat("All");
+                    setSelectedSkill("All");
+                  }}>
+                    <Text className="text-amber-400 text-[9px] font-black uppercase">Reset</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
-              {matches.map((match) => (
+              {filteredMatches.map((match) => (
                 <View
                   key={match.id}
                   className="relative w-full h-64 rounded-3xl overflow-hidden border border-white/5 shadow-2xl"

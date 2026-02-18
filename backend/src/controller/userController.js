@@ -74,3 +74,52 @@ export const loginController = async (req, res) => {
     res.status(500).json("Internal server error");
   }
 };
+
+export const updateProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { profilePicture, username, email } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update fields if provided
+    if (profilePicture !== undefined) user.profilePicture = profilePicture;
+    if (username !== undefined) user.username = username;
+    if (email !== undefined) user.email = email;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      userData: {
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};
+
+export const getProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findByPk(userId, {
+      attributes: ["id", "username", "email", "profilePicture"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ message: "Failed to fetch profile" });
+  }
+};

@@ -30,6 +30,10 @@ const createUserModel = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      profilePicture: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       tableName: "users",

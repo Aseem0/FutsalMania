@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   loginController,
   registerController,
+  updateProfileController,
+  getProfileController,
 } from "../controller/userController.js";
 import { getArenas } from "../controller/arenaController.js";
 import { createMatch, getMatches, getMyMatches } from "../controller/matchController.js";
@@ -12,6 +14,10 @@ const router = Router();
 router.post("/register", registerController);
 router.post("/login", loginController);
 router.get("/arenas", getArenas);
+
+// User Routes
+router.get("/users/profile", authMiddleware, getProfileController);
+router.put("/users/profile", authMiddleware, updateProfileController);
 
 // Match Routes
 router.post("/matches", authMiddleware, createMatch);

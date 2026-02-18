@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,20 +6,49 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import ProfileOption from '../../components/ProfileOption';
+import { fetchUserProfile } from "../../services/api";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const STATS = [
     { label: 'Games', value: '12' },
     { label: 'Rate', value: '85%' },
     { label: 'Points', value: '450', color: '#FFB300' },
   ];
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchUserProfile();
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator color="#FFB300" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -47,18 +76,19 @@ export default function ProfileScreen() {
           {/* Profile Card */}
           <View className="items-center mb-8">
             <View className="relative">
-              <View className="h-24 w-24 rounded-full overflow-hidden border-2 border-[#FFB300] bg-[#121212]">
-                <Image 
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAp8uv1e1BERfNA1lgYs3CMdujbEPzlE_zcAFcsMrONKO5AoXuaeVfLOQFwqQ2VYTCyGPI_747tBOMcUE03hbmjiqBYNqOHXKF4lPN6fnGxwxJfP-sYRThu0ia7uMYJQlKR6BLgbTpWF_6s5PCbSKYwcUx8T2uwUtSMRTmn9pYBM0h1Ze_l9QL_U1q4eZd_9LzWpmOawBgvGuENm7Nez2rVyo9uVrvbQT-rzDS_3Fx4yNLVNmEq67bVXWcvgXU5dR9ouZSoaSWP4rw5' }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
+              <View className="h-24 w-24 rounded-full overflow-hidden border-2 border-[#FFB300] bg-[#121212] items-center justify-center">
+                {user?.profilePicture ? (
+                  <Image 
+                    source={{ uri: user.profilePicture }}
+                    className="h-full w-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <MaterialCommunityIcons name="account" size={48} color="#333" />
+                )}
               </View>
-              <TouchableOpacity className="absolute bottom-0 right-0 bg-[#FFB300] h-7 w-7 rounded-full items-center justify-center border-2 border-black">
-                <MaterialCommunityIcons name="pencil" size={14} color="black" />
-              </TouchableOpacity>
             </View>
-            <Text className="text-2xl font-bold text-white mt-4">Aseem Rai</Text>
+            <Text className="text-2xl font-bold text-white mt-4">{user?.username || 'Player'}</Text>
             <Text className="text-[#A1A1AA] text-sm">Pro Player • Kathmandu, Nepal</Text>
             
             <View className="flex-row gap-8 mt-6">

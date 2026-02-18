@@ -41,4 +41,12 @@ export const fetchMyMatches = () => {
   return api.get("/matches/my");
 };
 
+export const updateProfilePicture = (profilePicture) => {
+  return api.put("/users/profile", { profilePicture });
+};
+
+export const fetchUserProfile = () => {
+  return api.get("/users/profile");
+};
+
 export default api;
