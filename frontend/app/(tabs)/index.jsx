@@ -135,12 +135,13 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity 
+                onPress={() => router.push('/teams')}
                 className="flex-1 flex-col gap-3 rounded-xl border border-[#1F1F1F] bg-[#121212] p-5"
                 activeOpacity={0.95}
               >
                 <MaterialCommunityIcons name="trophy-outline" size={32} color="#ffffff" />
                 <View>
-                  <Text className="font-semibold text-base text-white">Tournaments</Text>
+                  <Text className="font-semibold text-base text-white">Teams</Text>
                   <Text className="text-[10px] text-[#A1A1AA] mt-0.5 uppercase tracking-widest font-bold">
                     CHAMPIONSHIP
                   </Text>

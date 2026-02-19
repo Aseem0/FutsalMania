@@ -2,6 +2,8 @@ import { Sequelize } from "sequelize";
 import createUserModel from "./userModel.js";
 import createArenaModel from "./arenaModel.js";
 import createMatchModel from "./matchModel.js";
+import createTeamModel from "./teamModel.js";
+import createTeamMatchModel from "./teamMatchModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,6 +23,8 @@ const sequelize = new Sequelize(
 const User = createUserModel(sequelize);
 const Arena = createArenaModel(sequelize);
 const Match = createMatchModel(sequelize);
+const Team = createTeamModel(sequelize);
+const TeamMatch = createTeamMatchModel(sequelize);
 
 // Set up associations
 User.hasMany(Match, { foreignKey: "hostId", as: "hostedMatches" });
@@ -33,5 +37,25 @@ Match.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 User.belongsToMany(Match, { through: "MatchPlayers", as: "playingMatches", foreignKey: "userId" });
 Match.belongsToMany(User, { through: "MatchPlayers", as: "players", foreignKey: "matchId" });
 
-export { sequelize, User, Arena, Match };
-export default { sequelize, User, Arena, Match };
+// --- Teams & Team Matches ---
+
+// Team Owner
+User.hasMany(Team, { foreignKey: "ownerId", as: "ownedTeams" });
+Team.belongsTo(User, { foreignKey: "ownerId", as: "owner" });
+
+// Team Members (Many-to-Many)
+User.belongsToMany(Team, { through: "TeamMembers", as: "memberTeams", foreignKey: "userId" });
+Team.belongsToMany(User, { through: "TeamMembers", as: "members", foreignKey: "teamId" });
+
+// Team Match Associations
+Team.hasMany(TeamMatch, { foreignKey: "hostTeamId", as: "hostedTeamMatches" });
+TeamMatch.belongsTo(Team, { foreignKey: "hostTeamId", as: "hostTeam" });
+
+Team.hasMany(TeamMatch, { foreignKey: "guestTeamId", as: "guestTeamMatches" });
+TeamMatch.belongsTo(Team, { foreignKey: "guestTeamId", as: "guestTeam" });
+
+Arena.hasMany(TeamMatch, { foreignKey: "arenaId" });
+TeamMatch.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
+export { sequelize, User, Arena, Match, Team, TeamMatch };
+export default { sequelize, User, Arena, Match, Team, TeamMatch };

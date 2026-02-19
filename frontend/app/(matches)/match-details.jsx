@@ -8,11 +8,12 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { fetchMatchById, joinMatch, fetchUserProfile } from "../../services/api";
+import { fetchMatchById, joinMatch, leaveMatch, deleteMatch, fetchUserProfile } from "../../services/api";
 
 export default function MatchDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -21,6 +22,7 @@ export default function MatchDetailsScreen() {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // 'delete' | 'leave' | null
 
   useEffect(() => {
     loadData();
@@ -58,6 +60,53 @@ export default function MatchDetailsScreen() {
     }
   };
 
+  const handleLeave = () => {
+    setConfirmAction('leave');
+  };
+
+  const proceedLeave = async () => {
+    try {
+      setJoining(true);
+      await leaveMatch(id);
+      setConfirmAction(null);
+      Alert.alert("Success", "You've successfully left the squad.");
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to leave match.";
+      Alert.alert("Error", message);
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleDelete = () => {
+    setConfirmAction('delete');
+  };
+
+  const proceedDelete = async () => {
+    try {
+      setJoining(true);
+      await deleteMatch(id);
+      
+      const successMessage = "Your session has been cancelled.";
+      
+      if (Platform.OS === 'web') {
+        window.alert(successMessage);
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("Deleted", successMessage, [
+          { text: "OK", onPress: () => router.replace("/(tabs)") }
+        ], { cancelable: false });
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to delete match.";
+      Alert.alert("Error", message);
+    } finally {
+      setJoining(false);
+    }
+  };
+   
+
   if (loading) {
     return (
       <View className="flex-1 bg-black items-center justify-center">
@@ -66,8 +115,8 @@ export default function MatchDetailsScreen() {
     );
   }
 
-  const isHost = currentUser?.id === match?.hostId;
-  const isJoined = match?.players?.some(p => p.id === currentUser?.id);
+  const isHost = currentUser?.id == match?.hostId;
+  const isJoined = match?.players?.some(p => p.id == currentUser?.id);
   const isFull = match?.currentPlayers >= match?.maxPlayers;
 
   return (
@@ -160,8 +209,70 @@ export default function MatchDetailsScreen() {
         </ScrollView>
 
         {/* Bottom Action Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-black/80 p-6 border-t border-white/5">
-          {!isHost && !isJoined ? (
+        <View 
+          className="absolute bottom-0 left-0 right-0 bg-black/80 p-6 border-t border-white/5"
+          style={{ zIndex: 100 }}
+        >
+          {confirmAction ? (
+            <View className="flex-row gap-3">
+              <TouchableOpacity 
+                onPress={() => setConfirmAction(null)}
+                className="flex-1 h-16 rounded-2xl items-center justify-center bg-white/5 border border-white/10"
+              >
+                <Text className="text-white/60 font-black uppercase tracking-widest">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={confirmAction === 'delete' ? proceedDelete : proceedLeave}
+                disabled={joining}
+                className="flex-[2] h-16 rounded-2xl flex-row items-center justify-center bg-red-500"
+              >
+                {joining ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <MaterialIcons name={confirmAction === 'delete' ? "delete" : "exit-to-app"} size={20} color="white" />
+                    <Text className="font-black uppercase tracking-widest text-white ml-2">
+                       Confirm {confirmAction === 'delete' ? "Delete" : "Leave"}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : isHost ? (
+            <TouchableOpacity 
+              onPress={handleDelete}
+              disabled={joining}
+              className="w-full h-16 rounded-2xl flex-row items-center justify-center bg-red-500/10 border border-red-500/50"
+            >
+              {joining ? (
+                <ActivityIndicator color="#ef4444" />
+              ) : (
+                <>
+                  <MaterialIcons name="delete-outline" size={20} color="#ef4444" />
+                  <Text className="font-black uppercase tracking-[2px] text-red-500 ml-2">
+                    Delete Session
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : isJoined ? (
+            <TouchableOpacity 
+              onPress={handleLeave}
+              disabled={joining}
+              className="w-full h-16 rounded-2xl flex-row items-center justify-center bg-white/5 border border-white/10"
+            >
+              {joining ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <MaterialIcons name="exit-to-app" size={20} color="#ff4444" />
+                  <Text className="font-black uppercase tracking-[2px] text-white/90 ml-2">
+                    Leave Squad
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : (
             <TouchableOpacity 
               onPress={handleJoin}
               disabled={joining || isFull}
@@ -177,12 +288,6 @@ export default function MatchDetailsScreen() {
                 </>
               )}
             </TouchableOpacity>
-          ) : (
-            <View className="bg-white/5 h-16 rounded-2xl items-center justify-center border border-white/5">
-              <Text className="text-amber-400 font-bold uppercase tracking-widest text-xs">
-                {isHost ? "You are organizing this game" : "You are in the squad!"}
-              </Text>
-            </View>
           )}
         </View>
       </View>
