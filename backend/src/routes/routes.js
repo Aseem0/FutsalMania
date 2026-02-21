@@ -17,6 +17,7 @@ import {
 } from "../controller/matchController.js";
 import { createTeam, getMyTeams, getAllTeams } from "../controller/teamController.js";
 import { hostTeamMatch, getTeamMatches, joinAsOpponent } from "../controller/teamMatchController.js";
+import { createRecruitment, getRecruitments } from "../controller/playerRecruitmentController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -46,5 +47,9 @@ router.get("/teams", getAllTeams);
 router.post("/team-matches", authMiddleware, hostTeamMatch);
 router.get("/team-matches", getTeamMatches);
 router.post("/team-matches/:matchId/join", authMiddleware, joinAsOpponent);
+
+// Recruitment Routes
+router.post("/recruitments", authMiddleware, createRecruitment);
+router.get("/recruitments", getRecruitments);
 
 export default router;

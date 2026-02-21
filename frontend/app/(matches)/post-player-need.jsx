@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { createRecruitment } from "../../services/api";
 
 export default function PostPlayerNeed() {
   const router = useRouter();
@@ -51,10 +52,29 @@ export default function PostPlayerNeed() {
     }
   };
 
-  const handlePost = () => {
-    // Logic for posting (currently UI only)
-    console.log("Posting Need:", formData);
-    router.back();
+  const handlePost = async () => {
+    try {
+      // Basic validation
+      if (!formData.date || !formData.time) {
+        alert("Please select date and time");
+        return;
+      }
+
+      const recruitmentData = {
+        role: formData.role,
+        level: formData.level,
+        date: formData.date,
+        time: formData.time,
+        playersNeeded: parseInt(formData.playersNeeded),
+        description: formData.description,
+      };
+
+      await createRecruitment(recruitmentData);
+      router.back();
+    } catch (error) {
+      console.error("Error posting recruitment:", error);
+      alert("Failed to post recruitment. Please try again.");
+    }
   };
 
   const SelectChip = ({ label, selected, onSelect }) => (

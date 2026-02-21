@@ -4,6 +4,7 @@ import createArenaModel from "./arenaModel.js";
 import createMatchModel from "./matchModel.js";
 import createTeamModel from "./teamModel.js";
 import createTeamMatchModel from "./teamMatchModel.js";
+import createPlayerRecruitmentModel from "./playerRecruitmentModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -25,6 +26,7 @@ const Arena = createArenaModel(sequelize);
 const Match = createMatchModel(sequelize);
 const Team = createTeamModel(sequelize);
 const TeamMatch = createTeamMatchModel(sequelize);
+const PlayerRecruitment = createPlayerRecruitmentModel(sequelize);
 
 // Set up associations
 User.hasMany(Match, { foreignKey: "hostId", as: "hostedMatches" });
@@ -57,5 +59,12 @@ TeamMatch.belongsTo(Team, { foreignKey: "guestTeamId", as: "guestTeam" });
 Arena.hasMany(TeamMatch, { foreignKey: "arenaId" });
 TeamMatch.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
-export { sequelize, User, Arena, Match, Team, TeamMatch };
-export default { sequelize, User, Arena, Match, Team, TeamMatch };
+// --- Player Recruitment Associations ---
+User.hasMany(PlayerRecruitment, { foreignKey: "hostId", as: "hostedRecruitments" });
+PlayerRecruitment.belongsTo(User, { foreignKey: "hostId", as: "host" });
+
+Team.hasMany(PlayerRecruitment, { foreignKey: "teamId", as: "teamRecruitments" });
+PlayerRecruitment.belongsTo(Team, { foreignKey: "teamId", as: "team" });
+
+export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment };
+export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment };

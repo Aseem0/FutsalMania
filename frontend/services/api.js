@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://192.168.101.4:5000/api"; // Home IP
+const BASE_URL = "http://192.168.101.7:5000/api"; // Home IP
 // const BASE_URL = "http://100.64.234.160:5000/api"; // Current IP
 
 const api = axios.create({
@@ -87,6 +87,15 @@ export const hostTeamMatch = (matchData) => {
 
 export const joinTeamMatchAsOpponent = (matchId, teamId) => {
   return api.post(`/team-matches/${matchId}/join`, { teamId });
+};
+
+// Player Recruitment
+export const fetchRecruitments = (params) => {
+  return api.get("/recruitments", { params });
+};
+
+export const createRecruitment = (recruitmentData) => {
+  return api.post("/recruitments", recruitmentData);
 };
 
 export default api;
