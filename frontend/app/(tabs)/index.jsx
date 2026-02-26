@@ -11,24 +11,32 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { fetchMyMatches } from "../../services/api";
+import { fetchMyMatches, fetchMyApplications, fetchReceivedApplications } from "../../services/api";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [matches, setMatches] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
+  const [receivedApplications, setReceivedApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadMatches();
+    loadData();
   }, []);
 
-  const loadMatches = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetchMyMatches();
-      setMatches(response.data);
+      const [matchesRes, myAppsRes, receivedAppsRes] = await Promise.all([
+        fetchMyMatches(),
+        fetchMyApplications(),
+        fetchReceivedApplications(),
+      ]);
+      setMatches(matchesRes.data);
+      setMyApplications(myAppsRes.data);
+      setReceivedApplications(receivedAppsRes.data);
     } catch (error) {
-      console.error("Error fetching matches:", error);
+      console.error("Error fetching home data:", error);
     } finally {
       setLoading(false);
     }
@@ -246,6 +254,65 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
+
+          {/* Applications Received (For Creators) */}
+          {receivedApplications.length > 0 && (
+            <View className="mt-8">
+              <View className="flex-row items-center justify-between px-5 mb-4">
+                <Text className="text-lg font-bold text-white">Applications Received</Text>
+              </View>
+              <View className="px-5 gap-3">
+                {receivedApplications.map((app) => (
+                  <View key={app.id} className="bg-[#121212] border border-[#1f1f1f] rounded-xl p-4 flex-row items-center justify-between">
+                    <View className="flex-row items-center flex-1">
+                      <View className="w-10 h-10 rounded-full bg-[#1e1b4b] items-center justify-center mr-3">
+                        <Text className="text-white text-xs font-black">
+                          {app.applicant?.username?.substring(0, 2).toUpperCase()}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-white font-bold text-sm">{app.applicant?.username}</Text>
+                        <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold">
+                          Applied for {app.recruitment?.role}
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex-row gap-2">
+                       <View className="px-2 py-1 rounded bg-amber-400/10 border border-amber-400/20">
+                          <Text className="text-amber-400 text-[10px] font-bold uppercase">{app.status}</Text>
+                       </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Applications Sent (For Applicants) */}
+          {myApplications.length > 0 && (
+            <View className="mt-8">
+              <View className="flex-row items-center justify-between px-5 mb-4">
+                <Text className="text-lg font-bold text-white">Post Applied</Text>
+              </View>
+              <View className="px-5 gap-3">
+                {myApplications.map((app) => (
+                  <View key={app.id} className="bg-[#121212] border border-[#1f1f1f] rounded-xl p-4 flex-row items-center justify-between">
+                    <View className="flex-1">
+                      <Text className="text-white font-bold text-sm">
+                        {app.recruitment?.role} needed
+                      </Text>
+                      <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold">
+                        Hosted by {app.recruitment?.host?.username}
+                      </Text>
+                    </View>
+                    <View className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/5">
+                      <Text className="text-amber-400 text-[10px] font-bold uppercase">{app.status}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </ScrollView>
       </View>
     </SafeAreaView>

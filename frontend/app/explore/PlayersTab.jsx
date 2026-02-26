@@ -6,13 +6,15 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { fetchRecruitments } from "../../services/api";
+import { fetchRecruitments, applyToRecruitment } from "../../services/api";
 
-const PlayerCard = ({ recruitment }) => {
-  const { host, team, role, level, date, time, playersNeeded, description } = recruitment;
+const PlayerCard = ({ recruitment, onApply }) => {
+  const [applying, setApplying] = useState(false);
+  const { id, host, team, role, level, date, time, playersNeeded, description } = recruitment;
   
   // Format initials from username
   const initials = host?.username?.substring(0, 2).toUpperCase() || "??";
@@ -76,8 +78,20 @@ const PlayerCard = ({ recruitment }) => {
 
       {/* Action Buttons */}
       <View className="flex-row">
-        <TouchableOpacity className="flex-1 bg-amber-400 h-11 rounded-xl items-center justify-center active:bg-amber-500">
-          <Text className="text-black font-black uppercase text-[10px] tracking-widest">Apply Now</Text>
+        <TouchableOpacity 
+          disabled={applying}
+          onPress={async () => {
+            setApplying(true);
+            await onApply(id);
+            setApplying(false);
+          }}
+          className={`flex-1 ${applying ? 'bg-amber-400/50' : 'bg-amber-400'} h-11 rounded-xl items-center justify-center active:bg-amber-500`}
+        >
+          {applying ? (
+            <ActivityIndicator size="small" color="black" />
+          ) : (
+            <Text className="text-black font-black uppercase text-[10px] tracking-widest">Apply Now</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -144,6 +158,17 @@ const PlayersTab = () => {
     }));
   };
 
+  const handleApply = async (recruitmentId) => {
+    try {
+      await applyToRecruitment(recruitmentId);
+      Alert.alert("Success", "Application sent successfully!");
+    } catch (error) {
+      console.error("Error applying:", error);
+      const message = error.response?.data?.message || "Failed to send application";
+      Alert.alert("Error", message);
+    }
+  };
+
   return (
     <>
       <View className="flex-1">
@@ -193,7 +218,7 @@ const PlayersTab = () => {
               <ActivityIndicator color="#fbbf24" size="large" className="mt-10" />
             ) : recruitments.length > 0 ? (
               recruitments.map(item => (
-                <PlayerCard key={item.id} recruitment={item} />
+                <PlayerCard key={item.id} recruitment={item} onApply={handleApply} />
               ))
             ) : (
               <View className="items-center justify-center mt-20">
@@ -207,7 +232,7 @@ const PlayersTab = () => {
 
       {/* Floating Action Button */}
       <TouchableOpacity 
-        onPress={() => router.push("/post-player-need")}
+        onPress={() => router.push("/players-recruit/post-need")}
         style={{
           position: 'absolute',
           bottom: 120,
