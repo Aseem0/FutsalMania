@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  Modal,
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -34,18 +33,7 @@ export default function TeamsScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Modals state
-  const [showHostModal, setShowHostModal] = useState(false);
-
-  // Form states
-  const [matchForm, setMatchForm] = useState({
-    teamId: "",
-    arenaId: "",
-    date: "",
-    time: "",
-    format: "5v5",
-    price: "",
-  });
+  // Form state removed - handled by team-host.jsx
 
   useEffect(() => {
     loadData();
@@ -77,30 +65,7 @@ export default function TeamsScreen() {
     }
   };
 
-  const handleHostMatch = async () => {
-    if (
-      !matchForm.teamId ||
-      !matchForm.arenaId ||
-      !matchForm.date ||
-      !matchForm.time
-    ) {
-      return Alert.alert("Error", "Please fill all required fields");
-    }
-    try {
-      setSubmitting(true);
-      await hostTeamMatch(matchForm);
-      Alert.alert("Success", "Team match hosted! Waiting for opponents.");
-      setShowHostModal(false);
-      loadData();
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to host match",
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const router = useRouter();
 
   const handleChallenge = async (matchId) => {
     if (myTeams.length === 0)
@@ -171,7 +136,7 @@ export default function TeamsScreen() {
                     "No Team Found",
                     "You must be a member of a team to host matches.",
                   );
-                setShowHostModal(true);
+                router.push('/team-host');
               }}
               className="w-full bg-amber-400 h-20 rounded-3xl flex-row items-center justify-center border border-amber-500 shadow-xl"
               activeOpacity={0.9}
@@ -321,134 +286,6 @@ export default function TeamsScreen() {
         </ScrollView>
       </View>
 
-      {/* HOST MATCH MODAL */}
-      <Modal visible={showHostModal} animationType="slide" transparent={true}>
-        <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-[#121212] p-8 rounded-t-[40px] border-t border-white/10">
-            <View className="flex-row items-center justify-between mb-8">
-              <Text className="text-2xl font-black text-white uppercase">
-                Host Team Match
-              </Text>
-              <TouchableOpacity onPress={() => setShowHostModal(false)}>
-                <MaterialIcons name="close" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              className="gap-6 max-h-[500px]"
-            >
-              {/* Select Team */}
-              <View>
-                <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2 ml-1">
-                  Select Your Team
-                </Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  className="flex-row gap-2"
-                >
-                  {myTeams.map((t) => (
-                    <TouchableOpacity
-                      key={t.id}
-                      onPress={() =>
-                        setMatchForm({ ...matchForm, teamId: t.id })
-                      }
-                      className={`px-4 py-2 rounded-full border ${matchForm.teamId === t.id ? "bg-amber-400 border-amber-400" : "bg-white/5 border-white/10"}`}
-                    >
-                      <Text
-                        className={`font-bold text-[10px] ${matchForm.teamId === t.id ? "text-black" : "text-white/60"}`}
-                      >
-                        {t.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              {/* Select Arena */}
-              <View>
-                <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-3 ml-1">
-                  Select Arena
-                </Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  className="flex-row gap-3"
-                >
-                  {arenas.map((a) => (
-                    <TouchableOpacity
-                      key={a.id}
-                      onPress={() =>
-                        setMatchForm({ ...matchForm, arenaId: a.id })
-                      }
-                      className={`w-32 rounded-2xl overflow-hidden border ${matchForm.arenaId === a.id ? "border-amber-400" : "border-white/10"}`}
-                    >
-                      <Image
-                        source={{ uri: a.image }}
-                        className="h-20 w-full"
-                      />
-                      <View className="p-2 bg-black/40">
-                        <Text
-                          className="text-white font-bold text-[8px] text-center"
-                          numberOfLines={1}
-                        >
-                          {a.name}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2 ml-1">
-                    Date
-                  </Text>
-                  <TextInput
-                    className="bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold"
-                    placeholder="2024-03-25"
-                    placeholderTextColor="#444"
-                    value={matchForm.date}
-                    onChangeText={(val) =>
-                      setMatchForm({ ...matchForm, date: val })
-                    }
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2 ml-1">
-                    Time
-                  </Text>
-                  <TextInput
-                    className="bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold"
-                    placeholder="07:00 PM"
-                    placeholderTextColor="#444"
-                    value={matchForm.time}
-                    onChangeText={(val) =>
-                      setMatchForm({ ...matchForm, time: val })
-                    }
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleHostMatch}
-                disabled={submitting}
-                className="bg-[#FFB300] h-16 rounded-2xl items-center justify-center mt-4 mb-10"
-              >
-                {submitting ? (
-                  <ActivityIndicator color="black" />
-                ) : (
-                  <Text className="font-black uppercase tracking-widest">
-                    Broadcast Open Match
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

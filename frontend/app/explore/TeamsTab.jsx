@@ -186,32 +186,6 @@ const TeamsTab = () => {
         </ScrollView>
       </View>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity 
-        onPress={() => {
-          // Navigate to create team page (assuming it exists or will be created)
-          // router.push("/create-team") 
-        }}
-        style={{
-          position: 'absolute',
-          bottom: 120,
-          right: 24,
-          backgroundColor: '#fbbf24',
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingVertical: 14,
-          borderRadius: 30,
-          shadowColor: '#fbbf24',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.3,
-          shadowRadius: 20,
-          elevation: 10,
-        }}
-      >
-        <MaterialIcons name="add" size={24} color="black" />
-        <Text className="text-black font-black uppercase tracking-widest ml-2">Create Team</Text>
-      </TouchableOpacity>
     </>
   );
 };

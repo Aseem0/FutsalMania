@@ -6,8 +6,8 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
  * ReviewStep Component
  * Provides a final summary of all selected game details before posting.
  */
-export default function ReviewStep({ gameData, onEdit }) {
-  const { arena, details, settings } = gameData;
+export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
+  const { arena, details, settings, team } = gameData;
 
   // Reusable Section Header with Edit Button
   const SectionHeader = ({ title, icon, step }) => (
@@ -42,9 +42,25 @@ export default function ReviewStep({ gameData, onEdit }) {
         </Text>
       </View>
 
+      {/* Team Summary (Conditional) */}
+      {isTeamMatch && (
+        <View className="mb-8">
+            <SectionHeader title="Hosting Team" icon="shield" step={1} />
+            <View className="bg-[#111] p-4 rounded-2xl border border-white/10 flex-row gap-4 items-center">
+            <View className="w-12 h-12 rounded-xl bg-amber-400/10 items-center justify-center border border-amber-400/20">
+                <FontAwesome5 name="shield-alt" size={20} color="#fbbf24" />
+            </View>
+            <View className="flex-1">
+                <Text className="text-white font-black text-lg uppercase tracking-tight">{team?.name || 'No Team Selected'}</Text>
+                <Text className="text-white/40 text-[10px] uppercase font-bold">Captain's Squad</Text>
+            </View>
+            </View>
+        </View>
+      )}
+
       {/* Arena Summary */}
       <View className="mb-8">
-        <SectionHeader title="Arena" icon="place" step={1} />
+        <SectionHeader title="Arena" icon="place" step={isTeamMatch ? 2 : 1} />
         <View className="bg-[#111] p-3 rounded-2xl border border-white/10 flex-row gap-4 items-center">
           <View className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-900">
             <Image
@@ -87,7 +103,7 @@ export default function ReviewStep({ gameData, onEdit }) {
 
       {/* Settings Summary */}
       <View className="mb-10">
-        <SectionHeader title="Settings" icon="settings" step={3} />
+        <SectionHeader title="Settings" icon="settings" step={isTeamMatch ? 3 : 3} />
         <View className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden">
           {/* Format & Players */}
           <View className="flex-row border-b border-white/5">
@@ -95,18 +111,28 @@ export default function ReviewStep({ gameData, onEdit }) {
               <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Format</Text>
               <Text className="text-white font-black">{settings.format || '5v5'}</Text>
             </View>
-            <View className="flex-1 p-4">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Max Players</Text>
-              <Text className="text-white font-black">{settings.maxPlayers || 10} Slots</Text>
-            </View>
+            {!isTeamMatch && (
+              <View className="flex-1 p-4">
+                <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Max Players</Text>
+                <Text className="text-white font-black">{settings.maxPlayers || 10} Slots</Text>
+              </View>
+            )}
+            {isTeamMatch && (
+              <View className="flex-1 p-4">
+                <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Match Type</Text>
+                <Text className="text-white font-black">TEAM VS TEAM</Text>
+              </View>
+            )}
           </View>
           
           {/* Skill & Price */}
           <View className="flex-row">
-            <View className="flex-1 p-4 border-r border-white/5">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Skill Level</Text>
-              <Text className="text-white font-black">{settings.skillLevel || 'Any'}</Text>
-            </View>
+            {!isTeamMatch && (
+              <View className="flex-1 p-4 border-r border-white/5">
+                <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Skill Level</Text>
+                <Text className="text-white font-black">{settings.skillLevel || 'Any'}</Text>
+              </View>
+            )}
             <View className="flex-1 p-4">
               <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Price</Text>
               <Text className="text-amber-400 font-black">
