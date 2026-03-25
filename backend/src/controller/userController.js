@@ -62,6 +62,7 @@ export const loginController = async (req, res) => {
         message: "Login successful",
         userData: {
           username: existingUser.dataValues.username,
+          role: existingUser.dataValues.role,
           accessToken: accessToken,
           refreshToken: refreshToken,
         },
@@ -110,7 +111,7 @@ export const getProfileController = async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findByPk(userId, {
-      attributes: ["id", "username", "email", "profilePicture"],
+      attributes: ["id", "username", "email", "profilePicture", "role"],
     });
 
     if (!user) {

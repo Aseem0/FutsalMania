@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { MaterialCommunityIcons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
@@ -14,7 +15,7 @@ const BottomNav = () => {
   const navItems = [
     { name: 'Home', icon: 'home', activeIcon: 'home', path: '/(tabs)' },
     { name: 'Explore', icon: 'compass-outline', activeIcon: 'compass', path: '/explore' },
-    { name: 'Teams', icon: 'trophy-outline', activeIcon: 'trophy', path: '/teams' },
+    { name: 'Tournaments', icon: 'trophy-outline', activeIcon: 'trophy', path: '/teams' },
     { name: 'Profile', icon: 'account-outline', activeIcon: 'account', path: '/(tabs)/profile' },
   ];
 
@@ -74,15 +75,15 @@ const BottomNav = () => {
           animationType="fade"
           onRequestClose={() => setIsHostModalVisible(false)}
         >
-          <Pressable 
-            className="flex-1 bg-black/60 items-center justify-center px-4"
-            onPress={() => setIsHostModalVisible(false)}
-          >
-            <View 
-              className="bg-[#111] w-full max-w-sm rounded-[32px] border border-white/10 overflow-hidden"
-              onStartShouldSetResponder={() => true}
-              onTouchEnd={(e) => e.stopPropagation()}
-            >
+          <View className="flex-1 bg-black/80 items-center justify-center px-4">
+            {/* Backdrop for closing */}
+            <Pressable 
+              className="absolute inset-0" 
+              onPress={() => setIsHostModalVisible(false)} 
+            />
+            
+            {/* Modal Content */}
+            <View className="bg-[#111] w-full max-w-sm rounded-[32px] border border-white/10 overflow-hidden shadow-2xl">
               <View className="p-8">
                 <View className="flex-row items-center justify-between mb-8">
                   <View>
@@ -134,7 +135,7 @@ const BottomNav = () => {
                 </View>
               </View>
             </View>
-          </Pressable>
+          </View>
         </Modal>
 
         {navItems.slice(2).map((item) => (

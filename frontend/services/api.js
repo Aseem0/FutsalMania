@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = "http://192.168.101.6:5000/api"; // Home IP
-// const BASE_URL = "http://10.64.50.176:5000/api"; // Current IP
+// const BASE_URL = "http://100.64.221.139:5000/api"; // College IP
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -85,6 +85,10 @@ export const hostTeamMatch = (matchData) => {
   return api.post("/team-matches", matchData);
 };
 
+export const fetchTeamMatchById = (id) => {
+  return api.get(`/team-matches/${id}`);
+};
+
 export const joinTeamMatchAsOpponent = (matchId, teamId) => {
   return api.post(`/team-matches/${matchId}/join`, { teamId });
 };
@@ -109,6 +113,19 @@ export const fetchMyApplications = () => {
 
 export const fetchReceivedApplications = () => {
   return api.get("/recruitments/applications/received");
+};
+
+// Tournaments
+export const fetchTournaments = () => {
+  return api.get("/tournaments");
+};
+
+export const createTournament = (tournamentData) => {
+  return api.post("/tournaments", tournamentData);
+};
+
+export const fetchTournamentById = (id) => {
+  return api.get(`/tournaments/${id}`);
 };
 
 export default api;

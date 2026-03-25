@@ -16,13 +16,18 @@ import {
   deleteMatch,
 } from "../controller/matchController.js";
 import { createTeam, getMyTeams, getAllTeams } from "../controller/teamController.js";
-import { hostTeamMatch, getTeamMatches, joinAsOpponent } from "../controller/teamMatchController.js";
+import { hostTeamMatch, getTeamMatches, getTeamMatchById, joinAsOpponent } from "../controller/teamMatchController.js";
 import { createRecruitment, getRecruitments } from "../controller/playerRecruitmentController.js";
 import {
   applyToRecruitment,
   getMyApplications,
   getReceivedApplications,
 } from "../controller/recruitmentApplicationController.js";
+import {
+  createTournament,
+  getTournaments,
+  getTournamentById,
+} from "../controller/tournamentController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -51,6 +56,7 @@ router.get("/teams", getAllTeams);
 // Team Match Routes
 router.post("/team-matches", authMiddleware, hostTeamMatch);
 router.get("/team-matches", getTeamMatches);
+router.get("/team-matches/:id", getTeamMatchById);
 router.post("/team-matches/:matchId/join", authMiddleware, joinAsOpponent);
 
 // Recruitment Routes
@@ -59,5 +65,10 @@ router.get("/recruitments", getRecruitments);
 router.post("/recruitments/:id/apply", authMiddleware, applyToRecruitment);
 router.get("/recruitments/applications/my", authMiddleware, getMyApplications);
 router.get("/recruitments/applications/received", authMiddleware, getReceivedApplications);
+
+// Tournament Routes
+router.post("/tournaments", authMiddleware, createTournament);
+router.get("/tournaments", getTournaments);
+router.get("/tournaments/:id", getTournamentById);
 
 export default router;

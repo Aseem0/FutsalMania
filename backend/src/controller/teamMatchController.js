@@ -1,23 +1,30 @@
-import { TeamMatch, Team, Arena } from "../model/index.js";
+import { TeamMatch, Team, Arena, User } from "../model/index.js";
 
 export const hostTeamMatch = async (req, res) => {
   try {
-    const { teamId, arenaId, date, time, format, price } = req.body;
+    const { teamId, customTeamName, arenaId, date, time, format, price } = req.body;
     const userId = req.user.id;
+    console.log("📡 hostTeamMatch called by user:", userId, "body:", JSON.stringify(req.body));
 
-    // Verify user owns the team
-    const team = await Team.findByPk(teamId);
-    if (!team || team.ownerId !== userId) {
-      return res.status(403).json({ message: "Only team owner can host a match" });
+    // If a formal team is provided, we can still check it, 
+    // but we don't block the request if any user wants to host as "Organizer"
+    let verifiedTeamId = null;
+    if (teamId) {
+      const team = await Team.findByPk(teamId);
+      if (team) {
+        verifiedTeamId = team.id;
+      }
     }
 
     const newMatch = await TeamMatch.create({
-      hostTeamId: teamId,
+      hostTeamId: verifiedTeamId,
+      customTeamName: customTeamName || (verifiedTeamId ? null : "Squad Alpha"), // Fallback if needed
+      hostId: userId,
       arenaId,
       date,
       time,
       format,
-      price,
+      price: price || 0,
       status: "open",
     });
 
@@ -35,6 +42,7 @@ export const getTeamMatches = async (req, res) => {
         { model: Team, as: "hostTeam", attributes: ["id", "name", "logo"] },
         { model: Team, as: "guestTeam", attributes: ["id", "name", "logo"] },
         { model: Arena, as: "arena" },
+        { model: User, as: "host", attributes: ["id", "username", "profilePicture"] }
       ],
       order: [["date", "ASC"], ["time", "ASC"]],
     });
@@ -43,6 +51,29 @@ export const getTeamMatches = async (req, res) => {
   } catch (error) {
     console.error("Error fetching team matches:", error);
     res.status(500).json({ message: "Failed to fetch team matches" });
+  }
+};
+
+export const getTeamMatchById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const match = await TeamMatch.findByPk(id, {
+      include: [
+        { model: Team, as: "hostTeam", attributes: ["id", "name", "logo"] },
+        { model: Team, as: "guestTeam", attributes: ["id", "name", "logo"] },
+        { model: Arena, as: "arena" },
+        { model: User, as: "host", attributes: ["id", "username", "profilePicture"] }
+      ],
+    });
+
+    if (!match) {
+      return res.status(404).json({ message: "Team match not found" });
+    }
+
+    res.status(200).json(match);
+  } catch (error) {
+    console.error("Error fetching team match:", error);
+    res.status(500).json({ message: "Failed to fetch team match" });
   }
 };
 

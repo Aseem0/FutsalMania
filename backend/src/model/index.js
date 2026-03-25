@@ -6,6 +6,7 @@ import createTeamModel from "./teamModel.js";
 import createTeamMatchModel from "./teamMatchModel.js";
 import createPlayerRecruitmentModel from "./playerRecruitmentModel.js";
 import createRecruitmentApplicationModel from "./recruitmentApplicationModel.js";
+import createTournamentModel from "./tournamentModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -29,6 +30,7 @@ const Team = createTeamModel(sequelize);
 const TeamMatch = createTeamMatchModel(sequelize);
 const PlayerRecruitment = createPlayerRecruitmentModel(sequelize);
 const RecruitmentApplication = createRecruitmentApplicationModel(sequelize);
+const Tournament = createTournamentModel(sequelize);
 
 // Set up associations
 User.hasMany(Match, { foreignKey: "hostId", as: "hostedMatches" });
@@ -61,6 +63,9 @@ TeamMatch.belongsTo(Team, { foreignKey: "guestTeamId", as: "guestTeam" });
 Arena.hasMany(TeamMatch, { foreignKey: "arenaId" });
 TeamMatch.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
+User.hasMany(TeamMatch, { foreignKey: "hostId", as: "organizedTeamMatches" });
+TeamMatch.belongsTo(User, { foreignKey: "hostId", as: "host" });
+
 // --- Player Recruitment Associations ---
 User.hasMany(PlayerRecruitment, { foreignKey: "hostId", as: "hostedRecruitments" });
 PlayerRecruitment.belongsTo(User, { foreignKey: "hostId", as: "host" });
@@ -75,5 +80,5 @@ RecruitmentApplication.belongsTo(User, { foreignKey: "userId", as: "applicant" }
 PlayerRecruitment.hasMany(RecruitmentApplication, { foreignKey: "recruitmentId", as: "applications" });
 RecruitmentApplication.belongsTo(PlayerRecruitment, { foreignKey: "recruitmentId", as: "recruitment" });
 
-export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication };
-export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication };
+export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament };
+export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament };

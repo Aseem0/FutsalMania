@@ -1,4 +1,5 @@
-import { Arena } from "../model/index.js";
+import { Arena, User } from "../model/index.js";
+import bcryptjs from "bcryptjs";
 
 /**
  * Seeds the database with initial Futsal Arena data if empty.
@@ -50,5 +51,39 @@ export const seedArenas = async () => {
     console.log(`✅ Database synced: Seeded ${dummyArenas.length} arenas.`);
   } catch (error) {
     console.error("❌ Seeding failed:", error);
+  }
+};
+
+/**
+ * Seeds an admin user if they don't exist.
+ */
+export const seedAdmin = async () => {
+  try {
+    const username = "Ram";
+    const password = "Ram123";
+    const email = "ram@futsalmania.com";
+
+    const existingUser = await User.findOne({ where: { username } });
+    
+    if (!existingUser) {
+      const hashedPassword = await bcryptjs.hashSync(password, 8);
+      await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        role: "admin",
+      });
+      console.log(`✅ Admin user '${username}' created.`);
+    } else {
+      // Ensure the existing user has the admin role
+      if (existingUser.role !== "admin") {
+        await existingUser.update({ role: "admin" });
+        console.log(`✅ Existing user '${username}' promoted to admin.`);
+      } else {
+        console.log(`ℹ️ Admin user '${username}' already exists.`);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Seeding admin failed:", error);
   }
 };

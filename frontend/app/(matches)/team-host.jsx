@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
-import { hostTeamMatch } from "../../services/api";
+import { hostTeamMatch, fetchMyTeams } from "../../services/api";
 import { Alert } from "react-native";
 
 // Step Components
-import TeamStep from "../../components/host-game/TeamStep";
 import ArenaStep from "../../components/host-game/ArenaStep";
 import DetailsStep from "../../components/host-game/DetailsStep";
+import GameSettings from "../../components/host-game/GameSettings";
 import ReviewStep from "../../components/host-game/ReviewStep";
 
 const TOTAL_STEPS = 4;
@@ -18,12 +19,34 @@ export default function TeamHostScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [fetchingTeams, setFetchingTeams] = useState(true);
   const [gameData, setGameData] = useState({
     team: null,
+    customTeamName: '',
     arena: null,
     details: { date: '', time: '' },
-    settings: { format: '5v5', price: 0 },
+    settings: { format: '5v5', skillLevel: 'Intermediate', matchType: 'Friendly', price: 0 },
   });
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    try {
+      setFetchingTeams(true);
+      const res = await fetchMyTeams();
+      if (res.data && res.data.length > 0) {
+        setGameData(prev => ({ ...prev, team: res.data[0], customTeamName: res.data[0].name }));
+      } else {
+        setGameData(prev => ({ ...prev, team: null }));
+      }
+    } catch (err) {
+      console.error("Error fetching teams:", err);
+    } finally {
+      setFetchingTeams(false);
+    }
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -44,24 +67,30 @@ export default function TeamHostScreen() {
       // Final Post Logic
       try {
         setLoading(true);
+        console.log("📡 POST CHALLENGE pressed, building payload...");
+        
         const matchPayload = {
-          teamId: gameData.team.id,
-          arenaId: gameData.arena.id,
+          teamId: gameData.team?.id || null,
+          customTeamName: gameData.customTeamName || null,
+          arenaId: gameData.arena?.id,
           date: gameData.details.date,
           time: gameData.details.time,
           format: gameData.settings.format,
-          price: gameData.settings.price,
+          price: 0,
         };
 
+        console.log("📡 Payload:", JSON.stringify(matchPayload));
         const response = await hostTeamMatch(matchPayload);
-        
-        if (response.status === 201 || response.status === 200) {
-          Alert.alert("Victory!", "Your team match has been broadcasted. Waiting for challengers!");
-          router.replace('/(tabs)/teams');
-        }
+        console.log("📡 Response status:", response.status);
+        console.log("📡 Response data:", JSON.stringify(response.data));
+
+        Alert.alert("Victory! 🏆", "Your team challenge has been broadcasted. Opponents can now find you!");
+        router.replace('/(tabs)');
       } catch (error) {
-        console.error("Error posting team match:", error);
-        const errorMessage = error.response?.data?.message || "Something went wrong while hosting the match.";
+        console.error("❌ Error posting team match:", error);
+        console.error("❌ Error response:", error.response?.data);
+        console.error("❌ Error status:", error.response?.status);
+        const errorMessage = error.response?.data?.message || error.message || "Something went wrong while hosting the match.";
         Alert.alert("Broadcast Failed", errorMessage);
       } finally {
         setLoading(false);
@@ -70,13 +99,22 @@ export default function TeamHostScreen() {
   };
 
   const stepTitles = [
-    "Select Your Team",
-    "Choose Arena",
+    "Select Arena",
     "Match Details",
+    "Match Settings",
     "Review & Broadcast"
   ];
 
   const progress = (currentStep / TOTAL_STEPS) * 100;
+
+  if (fetchingTeams) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator color="#fbbf24" size="large" />
+        <Text className="text-white/40 mt-4 font-black uppercase tracking-widest text-[10px]">Preparing Pitch...</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -105,6 +143,7 @@ export default function TeamHostScreen() {
             </TouchableOpacity>
           </View>
 
+
           {/* Progress Bar */}
           <View className="mb-4">
             <View className="w-full bg-white/10 h-1 rounded-full overflow-hidden mb-3">
@@ -122,21 +161,24 @@ export default function TeamHostScreen() {
         {/* Dynamic Content */}
         <View className="flex-1">
           {currentStep === 1 && (
-            <TeamStep 
-              selectedTeam={gameData.team} 
-              onSelect={(team) => setGameData({ ...gameData, team })} 
+            <ArenaStep 
+              selectedArena={gameData.arena} 
+              onSelect={(arena) => setGameData({ ...gameData, arena })}
             />
           )}
           {currentStep === 2 && (
-            <ArenaStep 
-              selectedArena={gameData.arena} 
-              onSelect={(arena) => setGameData({ ...gameData, arena })} 
-            />
-          )}
-          {currentStep === 3 && (
             <DetailsStep 
               details={gameData.details}
               onUpdate={(details) => setGameData({ ...gameData, details: { ...gameData.details, ...details } })}
+            />
+          )}
+          {currentStep === 3 && (
+            <GameSettings 
+              settings={gameData.settings}
+              onUpdate={(settings) => setGameData({ ...gameData, settings: { ...gameData.settings, ...settings } })}
+              isTeamMatch={true}
+              customTeamName={gameData.customTeamName}
+              onUpdateCustomTeamName={(name) => setGameData({ ...gameData, customTeamName: name })}
             />
           )}
           {currentStep === 4 && (
@@ -154,28 +196,26 @@ export default function TeamHostScreen() {
             onPress={handleNext}
             disabled={
               loading ||
-              (currentStep === 1 && !gameData.team) ||
-              (currentStep === 2 && !gameData.arena) ||
-              (currentStep === 3 && (!gameData.details.date || !gameData.details.time))
+              (currentStep === 1 && !gameData.arena) ||
+              (currentStep === 2 && (!gameData.details.date || !gameData.details.time))
             }
             className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
               (loading || 
-               (currentStep === 1 && !gameData.team) || 
-               (currentStep === 2 && !gameData.arena) || 
-               (currentStep === 3 && (!gameData.details.date || !gameData.details.time))) 
+               (currentStep === 1 && !gameData.arena) || 
+               (currentStep === 2 && (!gameData.details.date || !gameData.details.time))) 
                 ? 'bg-zinc-800' : 'bg-amber-400'
             }`}
             activeOpacity={0.9}
           >
             <Text className={`font-black tracking-widest ${
-              (loading || (currentStep === 1 && !gameData.team)) ? 'text-white/20' : 'text-black'
+              (loading || (currentStep === 1 && !gameData.arena)) ? 'text-white/20' : 'text-black'
             }`}>
               {loading ? "BROADCASTING..." : (currentStep === TOTAL_STEPS ? "POST CHALLENGE" : "NEXT STEP")}
             </Text>
             <MaterialIcons 
               name={currentStep === TOTAL_STEPS ? "send" : "arrow-forward"} 
               size={18} 
-              color={(currentStep === 1 && !gameData.team) ? "rgba(255,255,255,0.1)" : "#000"} 
+              color={(currentStep === 1 && !gameData.arena) ? "rgba(255,179,0,0.1)" : "#000"} 
             />
           </TouchableOpacity>
         </View>

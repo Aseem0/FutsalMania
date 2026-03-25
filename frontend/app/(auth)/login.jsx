@@ -31,11 +31,16 @@ export default function LoginScreen() {
       const response = await login({ username, password });
 
       if (response.status === 200) {
-        const { accessToken } = response.data.userData;
+        const { accessToken, role } = response.data.userData;
         await AsyncStorage.setItem("userToken", accessToken);
         await AsyncStorage.setItem("username", response.data.userData.username);
-
-        router.replace("/(onboarding)");
+        await AsyncStorage.setItem("userRole", role);
+ 
+        if (role === "admin") {
+          router.replace("/(tabs)");
+        } else {
+          router.replace("/(onboarding)");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { fetchArenas } from "../../services/api";
@@ -78,7 +79,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
       showsVerticalScrollIndicator={false}
     >
       <View className="mt-4">
-        <Text className="text-2xl font-black mb-2 text-white">
+        <Text className="text-2xl font-black mb-2 text-white italic uppercase tracking-tighter">
           Select Arena
         </Text>
         <Text className="text-white/50 text-sm mb-8 font-medium">
@@ -98,7 +99,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
           className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white"
           placeholder="Search arenas..."
           placeholderTextColor="rgba(255,255,255,0.3)"
-          style={{ outlineStyle: "none" }}
+          style={Platform.OS === 'web' ? { outlineWidth: 0 } : {}}
         />
       </View>
 
@@ -125,7 +126,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
 
             <View className="flex-1">
               <View className="flex-row justify-between items-start">
-                <Text className="font-bold text-white text-md">
+                <Text className="font-bold text-white text-md uppercase leading-none">
                   {arena.name}
                 </Text>
                 <View className="flex-row items-center">
@@ -142,7 +143,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
                   size={12}
                   color="rgba(255,255,255,0.4)"
                 />
-                <Text className="text-white/40 text-xs ml-1 font-medium">
+                <Text className="text-white/40 text-[10px] ml-1 font-medium">
                   {arena.location}
                 </Text>
               </View>

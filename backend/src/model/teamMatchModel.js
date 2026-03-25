@@ -33,7 +33,15 @@ const createTeamMatchModel = (sequelize) => {
       },
       hostTeamId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+      },
+      customTeamName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      hostId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       guestTeamId: {
         type: DataTypes.INTEGER,

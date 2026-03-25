@@ -34,6 +34,11 @@ const createUserModel = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      role: {
+        type: DataTypes.ENUM("user", "admin"),
+        allowNull: false,
+        defaultValue: "user",
+      },
     },
     {
       tableName: "users",
