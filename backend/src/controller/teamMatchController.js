@@ -4,7 +4,6 @@ export const hostTeamMatch = async (req, res) => {
   try {
     const { teamId, customTeamName, arenaId, date, time, format, price } = req.body;
     const userId = req.user.id;
-    console.log("📡 hostTeamMatch called by user:", userId, "body:", JSON.stringify(req.body));
 
     // If a formal team is provided, we can still check it, 
     // but we don't block the request if any user wants to host as "Organizer"

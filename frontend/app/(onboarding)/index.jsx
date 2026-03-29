@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import OnboardingHeader from "../../components/OnboardingHeader";
 import SelectionCard from "../../components/SelectionCard";
 
@@ -136,9 +137,13 @@ export default function OnboardingScreen() {
     });
   };
 
-  const handleNext = () => {
-    if (currentSlide < 2) setCurrentSlide(currentSlide + 1);
-    else router.replace("/(tabs)");
+  const handleNext = async () => {
+    if (currentSlide < 2) {
+      setCurrentSlide(currentSlide + 1);
+    } else {
+      await AsyncStorage.setItem("hasCompletedOnboarding", "true");
+      router.replace("/(tabs)");
+    }
   };
 
   return (

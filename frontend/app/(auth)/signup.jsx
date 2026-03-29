@@ -4,7 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StatusBar,
-  TouchableWithoutFeedback,
+  Pressable,
   Keyboard,
   Alert,
 } from "react-native";
@@ -49,7 +49,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
@@ -59,7 +59,7 @@ export default function SignUpScreen() {
             <View className="mb-4">
               <MaterialCommunityIcons name="soccer" size={32} color="#ffffff" />
             </View>
-            <Text className="text-white text-[32px] font-bold leading-tight tracking-tight">
+            <Text className="text-white text-[32px] font-outfit-bold leading-tight tracking-tight">
               Create Account
             </Text>
           </View>
@@ -100,17 +100,17 @@ export default function SignUpScreen() {
                 onPress={handleSignUp}
                 disabled={loading}
               >
-                <Text className="text-black text-sm font-bold uppercase tracking-[0.2em]">
+                <Text className="text-black text-sm font-inter-bold uppercase tracking-[0.2em]">
                   {loading ? "Creating Account..." : "Sign Up"}
                 </Text>
               </TouchableOpacity>
 
               <View className="flex items-center pt-6">
-                <Text className="text-sm font-light opacity-40 text-white mb-1">
+                <Text className="text-sm font-inter opacity-40 text-white mb-1">
                   Already have an account?
                 </Text>
                 <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
-                  <Text className="text-sm font-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
+                  <Text className="text-sm font-inter-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
                     Login
                   </Text>
                 </TouchableOpacity>
@@ -119,6 +119,6 @@ export default function SignUpScreen() {
           </View>
         </View>
       </SafeAreaView>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }

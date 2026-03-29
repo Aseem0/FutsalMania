@@ -50,6 +50,7 @@ router.delete("/matches/:id/leave", authMiddleware, leaveMatch);
 router.delete("/matches/:id", authMiddleware, deleteMatch);
 
 // Team Routes
+router.post("/teams", authMiddleware, createTeam);
 router.get("/teams/my", authMiddleware, getMyTeams);
 router.get("/teams", getAllTeams);
 

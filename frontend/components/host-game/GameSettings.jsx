@@ -24,7 +24,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
   const SectionLabel = ({ title, icon }) => (
     <View className="flex-row items-center gap-2 mb-4 ml-1">
       {icon && <MaterialIcons name={icon} size={14} color="#fbbf24" />}
-      <Text className="text-white/40 text-[10px] font-black uppercase tracking-[2px]">
+      <Text className="text-white/40 text-[10px] font-inter-bold uppercase tracking-[2px]">
         {title}
       </Text>
     </View>
@@ -39,7 +39,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
         active ? "bg-amber-400 border-amber-400" : "bg-[#111] border-white/5"
       }`}
     >
-      <Text className={`text-xs ${active ? "text-black font-black" : "text-white/60 font-bold"}`}>
+      <Text className={`text-xs ${active ? "text-black font-inter-black" : "text-white/60 font-inter-bold"}`}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -49,8 +49,8 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
     <ScrollView className="flex-1 px-6 pt-4 pb-10" showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View className="mb-8">
-        <Text className="text-2xl font-black text-white mb-2 italic uppercase tracking-tighter">Game Settings</Text>
-        <Text className="text-white/50 text-sm font-medium">
+        <Text className="text-2xl font-outfit-bold text-white mb-2 italic uppercase tracking-tighter">Game Settings</Text>
+        <Text className="text-white/50 text-sm font-inter-medium">
           {isTeamMatch ? "Configure your team's challenge parameters." : "Configure gameplay rules and player limits."}
         </Text>
       </View>
@@ -66,11 +66,11 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
               placeholderTextColor="rgba(255,255,255,0.2)"
               value={customTeamName}
               onChangeText={onUpdateCustomTeamName}
-              className="flex-1 ml-3 text-white font-black text-lg"
+              className="flex-1 ml-3 text-white font-inter-black text-lg"
               style={Platform.OS === 'web' ? { outlineWidth: 0 } : {}}
             />
           </View>
-          <Text className="text-white/20 text-[9px] font-bold uppercase mt-2 ml-1 italic">
+          <Text className="text-white/20 text-[9px] font-inter-bold uppercase mt-2 ml-1 italic">
             This name will be shown in the match summary.
           </Text>
         </View>
@@ -119,7 +119,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
               <View className="w-10 h-10 rounded-xl bg-amber-400/10 items-center justify-center">
                 <MaterialIcons name="groups" size={20} color="#fbbf24" />
               </View>
-              <Text className="text-white font-bold">Max Players</Text>
+              <Text className="text-white font-inter-bold">Max Players</Text>
             </View>
             
             <View className="flex-row items-center gap-4">
@@ -130,7 +130,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
                 <MaterialIcons name="remove" size={18} color="white" />
               </TouchableOpacity>
               
-              <Text className="text-xl font-black text-white w-6 text-center">
+              <Text className="text-xl font-inter-black text-white w-6 text-center">
                 {settings.maxPlayers || 10}
               </Text>
               
@@ -172,7 +172,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
               keyboardType="numeric"
               value={settings.price?.toString()}
               onChangeText={(val) => updateSetting('price', parseInt(val) || 0)}
-              className="flex-1 ml-3 text-white font-black text-lg"
+              className="flex-1 ml-3 text-white font-inter-black text-lg"
               style={Platform.OS === 'web' ? { outlineWidth: 0 } : {}}
             />
           </View>

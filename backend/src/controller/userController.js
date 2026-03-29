@@ -15,7 +15,7 @@ export const registerController = async (req, res) => {
       return res.status(409).json({ message: "Email already exists" });
     }
 
-    const hashedPassword = await bcryptjs.hashSync(password, 8);
+    const hashedPassword = await bcryptjs.hash(password, 8);
     const refreshToken = await generateRefreshToken({ username });
 
     await User.create({
@@ -40,7 +40,7 @@ export const loginController = async (req, res) => {
   try {
     const existingUser = await User.findOne({ where: { username: username } });
     if (existingUser != null) {
-      const isValidPassword = await bcryptjs.compareSync(
+      const isValidPassword = await bcryptjs.compare(
         password,
         existingUser.password
       );
@@ -86,7 +86,7 @@ export const updateProfileController = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update fields if provided
+    // Update fields
     if (profilePicture !== undefined) user.profilePicture = profilePicture;
     if (username !== undefined) user.username = username;
     if (email !== undefined) user.email = email;

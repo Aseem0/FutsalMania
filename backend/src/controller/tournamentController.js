@@ -4,7 +4,7 @@ export const createTournament = async (req, res) => {
   try {
     const { name, description, date, location, entryFee, prizePool, maxTeams, image } = req.body;
     
-    // Check if user is admin (optional, but good for safety)
+    // Check if user is admin
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Only admins can create tournaments" });
     }

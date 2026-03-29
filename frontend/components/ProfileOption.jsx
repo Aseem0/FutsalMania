@@ -25,8 +25,8 @@ const ProfileOption = ({
       </View>
       
       <View className="flex-1">
-        <Text className="text-white font-semibold text-base">{title}</Text>
-        {subtitle && <Text className="text-[#A1A1AA] text-xs leading-4 mt-0.5">{subtitle}</Text>}
+        <Text className="text-white font-inter-semibold text-base">{title}</Text>
+        {subtitle && <Text className="text-[#A1A1AA] text-xs font-inter-medium leading-4 mt-0.5">{subtitle}</Text>}
       </View>
 
       {isToggle ? (

@@ -16,12 +16,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import ProfileInput from '../../components/ProfileInput';
-import { fetchUserProfile, updateProfilePicture } from "../../services/api";
+import { fetchUserProfile, updateProfile } from "../../services/api";
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -78,7 +79,7 @@ export default function PersonalInfoScreen() {
   const handleUpdateAvatar = async (base64Image) => {
     try {
       setUploading(true);
-      await updateProfilePicture(base64Image);
+      await updateProfile({ profilePicture: base64Image });
       setFormData(prev => ({ ...prev, profilePicture: base64Image }));
       Alert.alert("Success", "Profile picture updated!");
     } catch (error) {
@@ -86,6 +87,23 @@ export default function PersonalInfoScreen() {
       Alert.alert("Error", "Failed to update profile picture.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await updateProfile({
+        username: formData.username,
+        email: formData.email,
+      });
+      Alert.alert("Success", "Profile updated successfully!");
+      router.back();
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      Alert.alert("Error", error.response?.data?.message || "Failed to save profile.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -187,11 +205,14 @@ export default function PersonalInfoScreen() {
 
             {/* Save Button */}
             <TouchableOpacity 
-              className="bg-[#FFB300] h-14 rounded-2xl items-center justify-center mt-6"
-              onPress={() => router.back()}
+              className={`bg-[#FFB300] h-14 rounded-2xl items-center justify-center mt-6 ${saving ? 'opacity-70' : ''}`}
+              onPress={handleSave}
               activeOpacity={0.8}
+              disabled={saving}
             >
-              <Text className="text-black font-bold text-lg uppercase tracking-wider">Save Changes</Text>
+              <Text className="text-black font-bold text-lg uppercase tracking-wider">
+                {saving ? "Saving..." : "Save Changes"}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>

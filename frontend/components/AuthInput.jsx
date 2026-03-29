@@ -17,7 +17,7 @@ export default function AuthInput({
   return (
     <View className="mb-6">
       {label && (
-        <Text className="text-[11px] uppercase tracking-widest font-medium text-white mb-1">
+        <Text className="text-[11px] uppercase tracking-widest font-inter-medium text-white mb-1">
           {label}
         </Text>
       )}
@@ -30,7 +30,7 @@ export default function AuthInput({
           secureTextEntry={isPassword && !showPassword}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
-          className="flex-1 bg-transparent px-0 py-3 text-base text-white"
+          className="flex-1 bg-transparent px-0 py-3 text-base text-white font-inter"
         />
         {isPassword && (
           <TouchableOpacity

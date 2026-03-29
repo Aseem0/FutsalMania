@@ -13,16 +13,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useRouter } from "expo-router";
 import { fetchTeamMatches, joinTeamMatchAsOpponent, fetchMyTeams } from "../../services/api";
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) return "TODAY";
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
-  if (date.toDateString() === tomorrow.toDateString()) return "TOMORROW";
-  return date.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }).toUpperCase();
-};
+import { formatDate } from "../../utils/dateUtils";
 
 const ChallengeCard = ({ match, router }) => {
   const { hostTeam, customTeamName, arena, date, time, format, host } = match;

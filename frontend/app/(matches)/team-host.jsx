@@ -132,8 +132,8 @@ export default function TeamHostScreen() {
             </TouchableOpacity>
             
             <View className="items-center">
-                <Text className="text-[10px] font-black text-amber-400 uppercase tracking-[2px]">Team Matchmaking</Text>
-                <Text className="text-xl font-black uppercase tracking-tight text-white">
+                <Text className="text-[10px] font-inter-bold text-amber-400 uppercase tracking-[2px]">Team Matchmaking</Text>
+                <Text className="text-xl font-outfit-bold uppercase tracking-tight text-white">
                 Host a Challenge
                 </Text>
             </View>
@@ -152,7 +152,7 @@ export default function TeamHostScreen() {
                 style={{ width: `${progress}%` }} 
               />
             </View>
-            <Text className="text-[11px] text-amber-400 font-black uppercase tracking-[2px] text-center">
+            <Text className="text-[11px] text-amber-400 font-inter-bold uppercase tracking-[2px] text-center">
               Step {currentStep}: {stepTitles[currentStep - 1]}
             </Text>
           </View>
@@ -207,7 +207,7 @@ export default function TeamHostScreen() {
             }`}
             activeOpacity={0.9}
           >
-            <Text className={`font-black tracking-widest ${
+            <Text className={`font-inter-bold tracking-widest ${
               (loading || (currentStep === 1 && !gameData.arena)) ? 'text-white/20' : 'text-black'
             }`}>
               {loading ? "BROADCASTING..." : (currentStep === TOTAL_STEPS ? "POST CHALLENGE" : "NEXT STEP")}

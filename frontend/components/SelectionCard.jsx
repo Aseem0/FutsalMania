@@ -18,7 +18,7 @@ export default function SelectionCard({
           isSelected ? "bg-amber-400 border-amber-400" : "bg-zinc-900/40 border-white/5"
         }`}
       >
-        <Text className={`text-[14px] font-black ${isSelected ? "text-black" : "text-white/90"}`}>
+        <Text className={`text-[14px] font-inter-black ${isSelected ? "text-black" : "text-white/90"}`}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -39,7 +39,7 @@ export default function SelectionCard({
       }`}>
         <Ionicons name={icon} size={28} color={isSelected ? "#000" : "#fff"} />
       </View>
-      <Text className={`text-[14px] font-black tracking-tight ${isSelected ? "text-black" : "text-white/90"}`}>
+      <Text className={`text-[14px] font-inter-black tracking-tight ${isSelected ? "text-black" : "text-white/90"}`}>
         {label}
       </Text>
     </TouchableOpacity>

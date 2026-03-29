@@ -243,10 +243,7 @@ const PlayersTab = () => {
           paddingHorizontal: 20,
           paddingVertical: 14,
           borderRadius: 30,
-          shadowColor: '#fbbf24',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.3,
-          shadowRadius: 20,
+          boxShadow: '0 10px 20px rgba(251, 191, 36, 0.3)',
           elevation: 10,
         }}
       >

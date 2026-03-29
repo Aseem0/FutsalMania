@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import ProfileOption from '../../components/ProfileOption';
 import { fetchUserProfile } from "../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -29,6 +30,12 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [])
+  );
 
   const loadProfile = async () => {
     try {
@@ -61,7 +68,7 @@ export default function ProfileScreen() {
             <TouchableOpacity onPress={() => router.back()} className="p-2">
               <MaterialCommunityIcons name="chevron-left" size={28} color="#ffffff" />
             </TouchableOpacity>
-            <Text className="text-xl font-bold text-white">Profile</Text>
+            <Text className="text-xl font-outfit-bold text-white">Profile</Text>
             <TouchableOpacity className="p-2">
               <MaterialCommunityIcons name="cog-outline" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -88,15 +95,15 @@ export default function ProfileScreen() {
                 )}
               </View>
             </View>
-            <Text className="text-2xl font-bold text-white mt-4">{user?.username || 'Player'}</Text>
-            <Text className="text-[#A1A1AA] text-sm">Pro Player • Kathmandu, Nepal</Text>
+            <Text className="text-2xl font-outfit-bold text-white mt-4">{user?.username || 'Player'}</Text>
+            <Text className="text-[#A1A1AA] text-sm font-inter-medium">Pro Player • Kathmandu, Nepal</Text>
             
             <View className="flex-row gap-8 mt-6">
               {STATS.map((stat, index) => (
                 <React.Fragment key={stat.label}>
                   <View className="items-center">
-                    <Text className={`font-bold text-lg ${stat.color ? `text-[${stat.color}]` : 'text-white'}`}>{stat.value}</Text>
-                    <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest">{stat.label}</Text>
+                    <Text className={`font-inter-bold text-lg ${stat.color ? `text-[${stat.color}]` : 'text-white'}`}>{stat.value}</Text>
+                    <Text className="text-[#A1A1AA] text-[10px] uppercase font-inter-bold tracking-widest">{stat.label}</Text>
                   </View>
                   {index < STATS.length - 1 && <View className="h-8 w-[1px] bg-[#1F1F1F] self-center" />}
                 </React.Fragment>
@@ -110,16 +117,16 @@ export default function ProfileScreen() {
               <View className="h-9 w-9 rounded-full items-center justify-center bg-black/40 mb-2 border border-[#1F1F1F]">
                 <MaterialCommunityIcons name="soccer" size={18} color="#FFB300" />
               </View>
-              <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest mb-0.5">Position</Text>
-              <Text className="text-white font-bold text-base">Forward</Text>
+              <Text className="text-[#A1A1AA] text-[10px] uppercase font-inter-bold tracking-widest mb-0.5">Position</Text>
+              <Text className="text-white font-inter-bold text-base">Forward</Text>
             </View>
 
             <View className="flex-1 items-center justify-center p-4 rounded-2xl border border-[#1F1F1F] bg-[#121212]">
               <View className="h-9 w-9 rounded-full items-center justify-center bg-black/40 mb-2 border border-[#1F1F1F]">
                 <MaterialCommunityIcons name="trending-up" size={18} color="#FFB300" />
               </View>
-              <Text className="text-[#A1A1AA] text-[10px] uppercase font-bold tracking-widest mb-0.5">Skill Level</Text>
-              <Text className="text-white font-bold text-base">Advanced</Text>
+              <Text className="text-[#A1A1AA] text-[10px] uppercase font-inter-bold tracking-widest mb-0.5">Skill Level</Text>
+              <Text className="text-white font-inter-bold text-base">Advanced</Text>
             </View>
           </View>
 
@@ -161,7 +168,23 @@ export default function ProfileScreen() {
             <ProfileOption 
               icon="logout-variant" 
               title="Logout" 
-              onPress={() => router.replace('/(auth)/login')}
+              onPress={() => {
+                Alert.alert(
+                  "Logout",
+                  "Are you sure you want to logout?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Logout",
+                      style: "destructive",
+                      onPress: async () => {
+                        await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
+                        router.replace('/(auth)/login');
+                      }
+                    }
+                  ]
+                );
+              }}
               color="#F87171"
             />
           </View>
@@ -172,7 +195,7 @@ export default function ProfileScreen() {
 }
 
 const SectionHeader = ({ title, topMargin = false }) => (
-  <Text className={`text-[#A1A1AA] text-[10px] font-black uppercase tracking-[2px] mb-4 ml-1 ${topMargin ? 'mt-6' : ''}`}>
+  <Text className={`text-[#A1A1AA] text-[10px] font-inter-bold uppercase tracking-[2px] mb-4 ml-1 ${topMargin ? 'mt-6' : ''}`}>
     {title}
   </Text>
 );

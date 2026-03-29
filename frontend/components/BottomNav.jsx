@@ -15,7 +15,7 @@ const BottomNav = () => {
   const navItems = [
     { name: 'Home', icon: 'home', activeIcon: 'home', path: '/(tabs)' },
     { name: 'Explore', icon: 'compass-outline', activeIcon: 'compass', path: '/explore' },
-    { name: 'Tournaments', icon: 'trophy-outline', activeIcon: 'trophy', path: '/teams' },
+    { name: 'Tournaments', icon: 'trophy-outline', activeIcon: 'trophy', path: '/tournaments' },
     { name: 'Profile', icon: 'account-outline', activeIcon: 'account', path: '/(tabs)/profile' },
   ];
 
@@ -54,10 +54,7 @@ const BottomNav = () => {
             className="h-14 w-14 rounded-full bg-[#FFB300] items-center justify-center"
             activeOpacity={0.9}
             style={{
-              shadowColor: '#FFB300',
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.4,
-              shadowRadius: 15,
+              boxShadow: '0 0 15px rgba(255, 179, 0, 0.4)',
               elevation: 8,
             }}
           >
@@ -77,9 +74,10 @@ const BottomNav = () => {
         >
           <View className="flex-1 bg-black/80 items-center justify-center px-4">
             {/* Backdrop for closing */}
-            <Pressable 
+            <TouchableOpacity 
               className="absolute inset-0" 
               onPress={() => setIsHostModalVisible(false)} 
+              activeOpacity={1}
             />
             
             {/* Modal Content */}

@@ -79,7 +79,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
       showsVerticalScrollIndicator={false}
     >
       <View className="mt-4">
-        <Text className="text-2xl font-black mb-2 text-white italic uppercase tracking-tighter">
+        <Text className="text-2xl font-outfit-bold mb-2 text-white italic uppercase tracking-tighter">
           Select Arena
         </Text>
         <Text className="text-white/50 text-sm mb-8 font-medium">
@@ -126,12 +126,12 @@ export default function ArenaStep({ selectedArena, onSelect }) {
 
             <View className="flex-1">
               <View className="flex-row justify-between items-start">
-                <Text className="font-bold text-white text-md uppercase leading-none">
+                <Text className="font-outfit-bold text-white text-md uppercase leading-none">
                   {arena.name}
                 </Text>
                 <View className="flex-row items-center">
                   <MaterialIcons name="star" size={12} color="#fbbf24" />
-                  <Text className="text-xs ml-1 font-black text-amber-400">
+                  <Text className="text-xs ml-1 font-inter-bold text-amber-400">
                     {arena.rating}
                   </Text>
                 </View>
@@ -143,13 +143,13 @@ export default function ArenaStep({ selectedArena, onSelect }) {
                   size={12}
                   color="rgba(255,255,255,0.4)"
                 />
-                <Text className="text-white/40 text-[10px] ml-1 font-medium">
+                <Text className="text-white/40 text-[10px] ml-1 font-inter-medium">
                   {arena.location}
                 </Text>
               </View>
 
               <View className="mt-2 bg-amber-400/10 px-2 py-0.5 rounded-full self-start">
-                <Text className="text-amber-400 text-[10px] font-black uppercase tracking-wider">
+                <Text className="text-amber-400 text-[10px] font-inter-bold uppercase tracking-wider">
                   {arena.distance}
                 </Text>
               </View>
@@ -164,7 +164,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
         ))}
 
         <View className="py-8">
-          <Text className="text-white/20 text-[10px] uppercase tracking-[3px] font-black text-center">
+          <Text className="text-white/20 text-[10px] uppercase tracking-[3px] font-inter-bold text-center">
             {arenas.length} venues available
           </Text>
         </View>

@@ -15,7 +15,7 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
     <View className="flex-row items-center justify-between mb-4">
       <View className="flex-row items-center gap-2">
         <MaterialIcons name={icon} size={16} color="#fbbf24" />
-        <Text className="text-white/40 text-[9px] font-black uppercase tracking-[2px]">
+        <Text className="text-white/40 text-[9px] font-inter-bold uppercase tracking-[2px]">
           {title}
         </Text>
       </View>
@@ -24,7 +24,7 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
         activeOpacity={0.7}
         className="bg-white/5 px-2.5 py-1 rounded-full border border-white/5"
       >
-        <Text className="text-amber-400 text-[9px] font-black uppercase tracking-wider">Edit</Text>
+        <Text className="text-amber-400 text-[9px] font-inter-bold uppercase tracking-wider">Edit</Text>
       </TouchableOpacity>
     </View>
   );
@@ -39,8 +39,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
       <View className="flex-1">
         <ScrollView className="flex-1 px-6 pt-4 pb-10" showsVerticalScrollIndicator={false}>
           <View className="mb-8">
-            <Text className="text-2xl font-black text-white mb-2 uppercase italic italic-tighter tracking-tighter">Review Challenge</Text>
-            <Text className="text-white/40 text-xs font-semibold">Your challenge will be broadcasted to all teams.</Text>
+            <Text className="text-2xl font-outfit-bold text-white mb-2 uppercase italic italic-tighter tracking-tighter">Review Challenge</Text>
+            <Text className="text-white/40 text-xs font-inter-semibold">Your challenge will be broadcasted to all teams.</Text>
           </View>
 
           {/* VS Match Card */}
@@ -55,15 +55,15 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
                 <View className="w-20 h-20 bg-amber-400/10 rounded-2xl items-center justify-center border-2 border-amber-400/20 mb-3 shadow-lg">
                   <FontAwesome5 name="shield-alt" size={32} color="#fbbf24" />
                 </View>
-                <Text className="text-white font-black uppercase tracking-tight text-center text-xs" numberOfLines={1}>
+                <Text className="text-white font-inter-black uppercase tracking-tight text-center text-xs" numberOfLines={1}>
                   {gameData.customTeamName || team?.name || "PERSONAL HOST"}
                 </Text>
-                <Text className="text-amber-400/40 text-[8px] font-black uppercase mt-1 tracking-widest">ORGANIZER</Text>
+                <Text className="text-amber-400/40 text-[8px] font-inter-bold uppercase mt-1 tracking-widest">ORGANIZER</Text>
               </View>
 
               {/* VS Badge */}
               <View className="px-4 py-2 bg-amber-400 rounded-full z-10 mx-2 shadow-xl shadow-amber-400/20">
-                 <Text className="text-black font-black italic text-sm tracking-tighter">VS</Text>
+                 <Text className="text-black font-inter-black italic text-sm tracking-tighter">VS</Text>
               </View>
 
               {/* Away Team (Challenger) */}
@@ -71,28 +71,28 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
                 <View className="w-20 h-20 bg-white/5 rounded-2xl items-center justify-center border-2 border-white/5 mb-3 border-dashed">
                   <MaterialCommunityIcons name="help-circle-outline" size={32} color="rgba(255,255,255,0.1)" />
                 </View>
-                <Text className="text-white/20 font-black uppercase tracking-tight text-center text-xs" numberOfLines={1}>
+                <Text className="text-white/20 font-inter-black uppercase tracking-tight text-center text-xs" numberOfLines={1}>
                   WAITING...
                 </Text>
-                <Text className="text-white/10 text-[8px] font-black uppercase mt-1 tracking-widest">OPPONENT</Text>
+                <Text className="text-white/10 text-[8px] font-inter-bold uppercase mt-1 tracking-widest">OPPONENT</Text>
               </View>
             </View>
 
             {/* Match Rules Bar */}
             <View className="flex-row justify-center gap-6 border-t border-white/5 pt-6">
                 <View className="items-center">
-                    <Text className="text-white/30 text-[8px] font-black uppercase tracking-widest mb-1">Format</Text>
-                    <Text className="text-white font-black text-xs">{settings.format || '5v5'}</Text>
+                    <Text className="text-white/30 text-[8px] font-inter-bold uppercase tracking-widest mb-1">Format</Text>
+                    <Text className="text-white font-inter-black text-xs">{settings.format || '5v5'}</Text>
                 </View>
                 <View className="w-[1px] h-8 bg-white/5" />
                 <View className="items-center">
-                    <Text className="text-white/30 text-[8px] font-black uppercase tracking-widest mb-1">Type</Text>
-                    <Text className="text-amber-400 font-black text-xs uppercase">{settings.matchType || 'Friendly'}</Text>
+                    <Text className="text-white/30 text-[8px] font-inter-bold uppercase tracking-widest mb-1">Type</Text>
+                    <Text className="text-amber-400 font-inter-black text-xs uppercase">{settings.matchType || 'Friendly'}</Text>
                 </View>
                 <View className="w-[1px] h-8 bg-white/5" />
                 <View className="items-center">
-                    <Text className="text-white/30 text-[8px] font-black uppercase tracking-widest mb-1">Min Level</Text>
-                    <Text className="text-white font-black text-xs uppercase">{settings.skillLevel || 'Inter'}</Text>
+                    <Text className="text-white/30 text-[8px] font-inter-bold uppercase tracking-widest mb-1">Min Level</Text>
+                    <Text className="text-white font-inter-black text-xs uppercase">{settings.skillLevel || 'Inter'}</Text>
                 </View>
             </View>
           </View>
@@ -104,8 +104,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
                 <Image source={{ uri: arena?.image }} className="w-full h-full" resizeMode="cover" />
             </View>
             <View className="flex-1">
-                <Text className="text-white font-black uppercase tracking-tight">{arena?.name || 'Pick Arena'}</Text>
-                <Text className="text-white/40 text-[10px] font-bold mt-0.5">{arena?.location || 'Unknown'}</Text>
+                <Text className="text-white font-inter-black uppercase tracking-tight">{arena?.name || 'Pick Arena'}</Text>
+                <Text className="text-white/40 text-[10px] font-inter-bold mt-0.5">{arena?.location || 'Unknown'}</Text>
             </View>
           </View>
 
@@ -116,8 +116,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
                     <MaterialIcons name="calendar-today" size={16} color="#fbbf24" />
                   </View>
                   <View>
-                      <Text className="text-white/20 text-[8px] font-black uppercase tracking-widest">Date</Text>
-                      <Text className="text-white font-black text-xs">{displayDate}</Text>
+                      <Text className="text-white/20 text-[8px] font-inter-bold uppercase tracking-widest">Date</Text>
+                      <Text className="text-white font-inter-black text-xs">{displayDate}</Text>
                   </View>
               </View>
               <View className="flex-row items-center gap-3">
@@ -125,8 +125,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
                     <MaterialIcons name="access-time" size={16} color="#fbbf24" />
                   </View>
                   <View>
-                      <Text className="text-white/20 text-[8px] font-black uppercase tracking-widest">Kick Off</Text>
-                      <Text className="text-white font-black text-xs">{details.time || 'TBD'}</Text>
+                      <Text className="text-white/20 text-[8px] font-inter-bold uppercase tracking-widest">Kick Off</Text>
+                      <Text className="text-white font-inter-black text-xs">{details.time || 'TBD'}</Text>
                   </View>
               </View>
           </View>
@@ -139,8 +139,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
   return (
     <ScrollView className="flex-1 px-6 pt-4 pb-10" showsVerticalScrollIndicator={false}>
       <View className="mb-8">
-        <Text className="text-2xl font-black text-white mb-2 uppercase italic tracking-tighter">Review & Post</Text>
-        <Text className="text-white/50 text-sm font-medium">
+        <Text className="text-2xl font-outfit-bold text-white mb-2 uppercase italic tracking-tighter">Review & Post</Text>
+        <Text className="text-white/50 text-sm font-inter-medium">
           Double check everything before hitting the pitch.
         </Text>
       </View>
@@ -158,7 +158,7 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
             />
           </View>
           <View className="flex-1">
-            <Text className="text-white font-bold text-md">{arena?.name || 'No Arena Selected'}</Text>
+            <Text className="text-white font-inter-bold text-md">{arena?.name || 'No Arena Selected'}</Text>
             <Text className="text-white/40 text-xs mt-1">{arena?.location || 'Unknown location'}</Text>
           </View>
         </View>
@@ -173,8 +173,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
               <MaterialIcons name="calendar-today" size={18} color="#fbbf24" />
             </View>
             <View>
-              <Text className="text-white/40 text-[9px] font-bold uppercase">Date</Text>
-              <Text className="text-white font-bold">{displayDate}</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase">Date</Text>
+              <Text className="text-white font-inter-bold">{displayDate}</Text>
             </View>
           </View>
           <View className="flex-row items-center gap-3">
@@ -182,8 +182,8 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
               <MaterialIcons name="access-time" size={18} color="#fbbf24" />
             </View>
             <View>
-              <Text className="text-white/40 text-[9px] font-bold uppercase">Time</Text>
-              <Text className="text-white font-bold">{details.time || 'Not set'}</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase">Time</Text>
+              <Text className="text-white font-inter-bold">{details.time || 'Not set'}</Text>
             </View>
           </View>
         </View>
@@ -196,24 +196,24 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
           {/* Format & Players */}
           <View className="flex-row border-b border-white/5">
             <View className="flex-1 p-4 border-r border-white/5">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Format</Text>
-              <Text className="text-white font-black">{settings.format || '5v5'}</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Format</Text>
+              <Text className="text-white font-inter-black">{settings.format || '5v5'}</Text>
             </View>
             <View className="flex-1 p-4">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Max Players</Text>
-              <Text className="text-white font-black">{settings.maxPlayers || 10} Slots</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Max Players</Text>
+              <Text className="text-white font-inter-black">{settings.maxPlayers || 10} Slots</Text>
             </View>
           </View>
           
           {/* Skill & Price */}
           <View className="flex-row">
             <View className="flex-1 p-4 border-r border-white/5">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Required Skill</Text>
-              <Text className="text-white font-black">{settings.skillLevel || 'Any'}</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Required Skill</Text>
+              <Text className="text-white font-inter-black">{settings.skillLevel || 'Any'}</Text>
             </View>
             <View className="flex-1 p-4">
-              <Text className="text-white/40 text-[9px] font-bold uppercase mb-1">Price</Text>
-              <Text className="text-amber-400 font-black uppercase">
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Price</Text>
+              <Text className="text-amber-400 font-inter-black uppercase">
                 {settings.price > 0 ? `NPR ${settings.price}` : 'FREE'}
               </Text>
             </View>

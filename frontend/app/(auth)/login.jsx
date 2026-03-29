@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
+  Pressable,
   StatusBar,
   Keyboard,
   Alert,
@@ -55,7 +55,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
@@ -65,7 +65,7 @@ export default function LoginScreen() {
             <View className="mb-4">
               <MaterialCommunityIcons name="soccer" size={36} color="#ffffff" />
             </View>
-            <Text className="text-white text-[40px] font-bold leading-tight tracking-tight">
+            <Text className="text-white text-[40px] font-outfit-bold leading-tight tracking-tight">
               Welcome
             </Text>
           </View>
@@ -86,7 +86,7 @@ export default function LoginScreen() {
             />
 
             <TouchableOpacity className="pt-2 mb-8">
-              <Text className="text-xs font-light text-white underline">
+              <Text className="text-xs font-inter text-white underline">
                 Forgot password?
               </Text>
             </TouchableOpacity>
@@ -97,17 +97,17 @@ export default function LoginScreen() {
               onPress={handleLogin}
               disabled={loading}
             >
-              <Text className="text-black text-sm font-bold uppercase tracking-[0.2em]">
+              <Text className="text-black text-sm font-inter-bold uppercase tracking-[0.2em]">
                 {loading ? "Logging in..." : "Login"}
               </Text>
             </TouchableOpacity>
 
             <View className="flex items-center pt-8">
-              <Text className="text-sm font-light opacity-40 text-white mb-1">
+              <Text className="text-sm font-inter opacity-40 text-white mb-1">
                 Don't have an account?
               </Text>
               <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-                <Text className="text-sm font-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
+                <Text className="text-sm font-inter-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
                   Sign Up
                 </Text>
               </TouchableOpacity>
@@ -115,6 +115,6 @@ export default function LoginScreen() {
           </View>
         </View>
       </SafeAreaView>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }

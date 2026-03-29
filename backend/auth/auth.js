@@ -1,14 +1,19 @@
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_change_me";
 
 const generateAccessToken = async (user) => {
-  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, "123", {
+  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, {
     expiresIn: "1h",
   });
   return token;
 };
 
 const generateRefreshToken = async (user) => {
-  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, "123", {
+  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, {
     expiresIn: "7d",
   });
   return token;

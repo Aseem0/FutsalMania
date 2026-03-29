@@ -21,95 +21,65 @@ const TournamentCard = ({ tournament, onJoin }) => {
   const { name, description, date, location, entryFee, prizePool, image, status } = tournament;
   
   const displayDate = date 
-    ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    ? new Date(date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }).toUpperCase()
     : 'TBD';
 
   return (
-    <View className="mb-8 bg-[#050505] border border-white/5 rounded-[40px] overflow-hidden shadow-2xl">
-      {/* Post Header - Admin Attribution */}
-      <View className="flex-row items-center px-6 py-5">
-        <View className="w-10 h-10 rounded-full bg-amber-400 items-center justify-center">
-          <Text className="text-black font-black text-xs">R</Text>
-        </View>
-        <View className="ml-3 flex-1">
-          <View className="flex-row items-center">
-            <Text className="text-white font-black text-sm uppercase tracking-tight">Ram (Admin)</Text>
-            <MaterialIcons name="verified" size={14} color="#fbbf24" style={{ marginLeft: 4 }} />
-          </View>
-          <Text className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-0.5">Certified Organizer</Text>
-        </View>
-        <TouchableOpacity className="p-2">
-          <MaterialCommunityIcons name="dots-horizontal" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Post Image */}
-      {image && (
-        <View className="px-3">
-          <Image 
-            source={{ uri: image }} 
-            className="w-full h-64 rounded-[32px] bg-zinc-900 shadow-lg shadow-black/80" 
-            resizeMode="cover"
-          />
-        </View>
-      )}
-
-      {/* Post Body */}
-      <View className="p-6">
-        <View className="flex-row justify-between items-start mb-4">
+    <TouchableOpacity 
+      activeOpacity={0.9}
+      onPress={() => onJoin(tournament.id)}
+      className="mb-6 w-full h-64 rounded-[40px] overflow-hidden border border-white/5 shadow-2xl relative"
+    >
+      {/* Background Image */}
+      <Image 
+        source={{ uri: image || "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop" }} 
+        className="absolute inset-0 w-full h-full bg-zinc-900" 
+        resizeMode="cover"
+      />
+      
+      {/* Gradient Overlay */}
+      <View className="absolute inset-0 bg-black/60" />
+      
+      {/* Content Overlay */}
+      <View className="flex-1 p-7 justify-between">
+        <View className="flex-row justify-between items-start">
           <View className="flex-1 mr-4">
-            <Text className="text-white font-black text-2xl uppercase tracking-tighter leading-7">
+            <Text className="text-white font-outfit-bold text-2xl uppercase tracking-tighter leading-7 shadow-lg">
               {name}
             </Text>
             <View className="flex-row items-center mt-2">
               <View className="bg-amber-400 px-2 py-0.5 rounded-full mr-2">
-                 <Text className="text-black text-[8px] font-black uppercase tracking-widest">{status || "OPEN"}</Text>
+                 <Text className="text-black text-[8px] font-inter-black uppercase tracking-widest">{status || "OPEN"}</Text>
               </View>
-              <Text className="text-white/40 font-black text-[10px] uppercase tracking-[2px]">
-                {prizePool ? `Prize Pool: Rs. ${prizePool}` : "GLORY AWAITS"}
-              </Text>
+              <View className="flex-row items-center">
+                <MaterialIcons name="place" size={12} color="#fbbf24" />
+                <Text className="text-white/70 font-inter-bold text-[9px] ml-1 uppercase tracking-tight" numberOfLines={1}>{location}</Text>
+              </View>
             </View>
           </View>
-        </View>
-
-        {description && (
-          <Text className="text-white/50 text-xs font-medium leading-5 mb-6" numberOfLines={3}>
-            {description}
-          </Text>
-        )}
-
-        {/* Info Grid */}
-        <View className="flex-row flex-wrap gap-2 mb-8">
-          <View className="flex-row items-center bg-white/5 px-4 py-3 rounded-2xl border border-white/5">
-            <MaterialIcons name="event" size={14} color="#fbbf24" />
-            <Text className="text-white font-bold text-[10px] ml-2 uppercase tracking-tight">{displayDate}</Text>
-          </View>
-          <View className="flex-row items-center bg-white/5 px-4 py-3 rounded-2xl border border-white/5">
-            <MaterialIcons name="place" size={14} color="#fbbf24" />
-            <Text className="text-white/60 font-bold text-[10px] ml-2 uppercase tracking-tight" numberOfLines={1}>{location}</Text>
+          <View className="bg-black/40 px-3 py-2 rounded-2xl border border-white/10 backdrop-blur-md">
+            <Text className="text-white text-[10px] font-inter-black uppercase tracking-widest">{displayDate}</Text>
           </View>
         </View>
 
-        {/* Footer Action */}
-        <View className="flex-row items-center justify-between pt-6 border-t border-white/5">
+        <View className="flex-row items-center justify-between bg-white/5 p-4 rounded-[28px] border border-white/10">
           <View>
-            <Text className="text-white/20 text-[8px] font-black uppercase tracking-[3px] mb-1">Registration</Text>
-            <Text className="text-white font-black text-xl tracking-tighter">Rs. {entryFee || "Free"}</Text>
+            <Text className="text-white/40 text-[8px] font-inter-black uppercase tracking-[3px] mb-1">Entry Fee</Text>
+            <Text className="text-white font-outfit-bold text-lg tracking-tighter">Rs. {entryFee || "0"}</Text>
           </View>
-          <TouchableOpacity 
-            onPress={() => onJoin(tournament.id)}
-            activeOpacity={0.8}
-            className="bg-amber-400 px-8 py-4 rounded-[24px] shadow-xl shadow-amber-400/20"
-          >
-            <Text className="text-black text-[11px] font-black uppercase tracking-widest leading-3">Join This Event</Text>
-          </TouchableOpacity>
+          <View className="items-end">
+            <Text className="text-amber-400 font-inter-black text-[10px] uppercase tracking-widest mb-1">
+              {prizePool ? `Rs. ${prizePool}` : "TROPHY"}
+            </Text>
+            <Text className="text-white/40 text-[8px] font-inter-black uppercase tracking-[3px]">Prize Pool</Text>
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
-export default function TeamsScreen() {
+export default function TournamentsScreen() {
   const router = useRouter();
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,8 +122,8 @@ export default function TeamsScreen() {
         <View className="bg-black/90 px-6 py-8 border-b border-[#1F1F1F]">
           <View className="flex-row justify-between items-end">
             <View>
-              <Text className="text-4xl font-black text-white uppercase tracking-tighter italic">Tournaments</Text>
-              <Text className="text-white/40 mt-1 text-[10px] font-black uppercase tracking-[3px]">Official Futsal Events</Text>
+              <Text className="text-4xl font-outfit-bold text-white uppercase tracking-tighter italic">Tournaments</Text>
+              <Text className="text-white/40 mt-1 text-[10px] font-inter-black uppercase tracking-[3px]">Official Futsal Events</Text>
             </View>
           </View>
         </View>
@@ -177,8 +147,8 @@ export default function TeamsScreen() {
                   <MaterialCommunityIcons name="trophy-plus" size={24} color="black" />
                 </View>
                 <View className="ml-4">
-                  <Text className="text-black font-black text-xl uppercase tracking-tighter">Post Tournament</Text>
-                  <Text className="text-black/40 text-[9px] font-black uppercase tracking-widest mt-0.5">Open a new event for users</Text>
+                  <Text className="text-black font-outfit-bold text-xl uppercase tracking-tighter">Post Tournament</Text>
+                  <Text className="text-black/40 text-[9px] font-inter-bold uppercase tracking-widest mt-0.5">Open a new event for users</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -188,8 +158,8 @@ export default function TeamsScreen() {
           <View className="px-6 mb-6 mt-4">
             <View className="flex-row items-center justify-between">
               <View>
-                <Text className="text-white font-black text-2xl uppercase tracking-tighter">Live Events</Text>
-                <Text className="text-white/40 text-[9px] font-bold uppercase tracking-[3px] mt-1">Browse and Join</Text>
+                <Text className="text-white font-outfit-bold text-2xl uppercase tracking-tighter">Live Events</Text>
+                <Text className="text-white/40 text-[9px] font-inter-bold uppercase tracking-[3px] mt-1">Browse and Join</Text>
               </View>
               <TouchableOpacity onPress={() => loadData()} className="p-2 bg-white/5 rounded-full">
                 <MaterialIcons name="refresh" size={18} color="#fbbf24" />
@@ -200,13 +170,13 @@ export default function TeamsScreen() {
           {loading ? (
             <View className="items-center justify-center py-20">
                <ActivityIndicator color="#fbbf24" />
-               <Text className="text-white/20 font-black uppercase text-[9px] mt-4 tracking-widest">Fetching Events...</Text>
+               <Text className="text-white/20 font-inter-black uppercase text-[9px] mt-4 tracking-widest">Fetching Events...</Text>
             </View>
           ) : tournaments.length === 0 ? (
             <View className="px-6">
               <View className="bg-[#111] p-12 rounded-[40px] border border-white/5 items-center justify-center italic">
                 <MaterialCommunityIcons name="trophy-variant-outline" size={40} color="rgba(255,255,255,0.03)" />
-                <Text className="text-white/20 mt-6 font-black uppercase text-center tracking-widest text-[10px]">No upcoming tournaments</Text>
+                <Text className="text-white/20 mt-6 font-inter-black uppercase text-center tracking-widest text-[10px]">No upcoming tournaments</Text>
               </View>
             </View>
           ) : (
@@ -215,7 +185,10 @@ export default function TeamsScreen() {
                 <TournamentCard 
                   key={tournament.id} 
                   tournament={tournament} 
-                  onJoin={(id) => Alert.alert("Coming Soon", "Tournament registration will be available shortly.")} 
+                  onJoin={(id) => router.push({
+                    pathname: "/(tournaments)/[id]",
+                    params: { id }
+                  })} 
                 />
               ))}
             </View>

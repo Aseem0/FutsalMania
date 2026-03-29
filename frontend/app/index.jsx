@@ -42,8 +42,9 @@ export default function RootIndex() {
     );
   }
 
-  // For testing purposes, always redirect to login screen first
-  return <Redirect href="/(auth)/login" />;
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   if (!hasCompletedOnboarding) {
     return <Redirect href="/(onboarding)" />;

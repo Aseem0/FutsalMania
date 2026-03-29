@@ -1,15 +1,17 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
-const BASE_URL = "http://192.168.101.6:5000/api"; // Home IP
-// const BASE_URL = "http://100.64.221.139:5000/api"; // College IP
+
+const API_HOST = "192.168.101.13"; 
+const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
 });
 
-// This automatically attaches your Login Token to every request
+
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("userToken");
   if (token) {
@@ -46,6 +48,10 @@ export const updateProfilePicture = (profilePicture) => {
   return api.put("/users/profile", { profilePicture });
 };
 
+export const updateProfile = (profileData) => {
+  return api.put("/users/profile", profileData);
+};
+
 export const fetchUserProfile = () => {
   return api.get("/users/profile");
 };
@@ -74,6 +80,10 @@ export const fetchTeams = () => {
 
 export const fetchMyTeams = () => {
   return api.get("/teams/my");
+};
+
+export const createTeam = (teamData) => {
+  return api.post("/teams", teamData);
 };
 
 // Team Matchmaking

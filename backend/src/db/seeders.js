@@ -1,14 +1,20 @@
 import { Arena, User } from "../model/index.js";
 import bcryptjs from "bcryptjs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * Seeds the database with initial Futsal Arena data if empty.
  */
 export const seedArenas = async () => {
   try {
-    // During development, we clear and re-seed to reflect any changes in this file
-    await Arena.destroy({ where: {}, truncate: true, cascade: true });
-    
+    const count = await Arena.count();
+    if (count > 0) {
+      console.log(`ℹ️  Arenas already seeded (${count} found). Skipping.`);
+      return;
+    }
+
     const dummyArenas = [
       {
         name: "Aeron",
@@ -59,14 +65,14 @@ export const seedArenas = async () => {
  */
 export const seedAdmin = async () => {
   try {
-    const username = "Ram";
-    const password = "Ram123";
-    const email = "ram@futsalmania.com";
+    const username = process.env.ADMIN_USERNAME || "Ram";
+    const password = process.env.ADMIN_PASSWORD || "Ram123";
+    const email = process.env.ADMIN_EMAIL || "ram@futsalmania.com";
 
     const existingUser = await User.findOne({ where: { username } });
     
     if (!existingUser) {
-      const hashedPassword = await bcryptjs.hashSync(password, 8);
+      const hashedPassword = await bcryptjs.hash(password, 8);
       await User.create({
         username,
         email,

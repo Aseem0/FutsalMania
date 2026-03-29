@@ -6,7 +6,6 @@ export const createMatch = async (req, res) => {
     const { arenaId, date, time, format, maxPlayers, skillLevel, price } = req.body;
     const hostId = req.user.id;
 
-    console.log("Creating match with payload:", { hostId, arenaId, date, time });
 
     const newMatch = await Match.create({
       hostId,
@@ -19,7 +18,6 @@ export const createMatch = async (req, res) => {
       price,
     });
 
-    console.log("Match created successfully:", newMatch.id);
     
     // Automatically add the host as the first player in the MatchPlayers table
     await newMatch.addPlayer(hostId);
@@ -41,7 +39,6 @@ export const getMatches = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    console.log(`Fetched ${matches.length} matches`);
     res.status(200).json(matches);
   } catch (error) {
     console.error("Error fetching matches:", error);
@@ -56,18 +53,19 @@ export const getMyMatches = async (req, res) => {
       where: {
         [Sequelize.Op.or]: [
           { hostId: userId },
-          // Using a subquery or literal because of the many-to-many relationship
-          Sequelize.literal(`EXISTS (SELECT 1 FROM "MatchPlayers" WHERE "MatchPlayers"."matchId" = "Match"."id" AND "MatchPlayers"."userId" = ${userId})`),
+          Sequelize.where(
+            Sequelize.literal(`(SELECT COUNT(*) FROM "MatchPlayers" WHERE "MatchPlayers"."matchId" = "Match"."id" AND "MatchPlayers"."userId" = :userId)`),
+            { [Sequelize.Op.gt]: 0 }
+          ),
         ],
       },
+      replacements: { userId },
       include: [
         { model: Arena, as: "arena" },
         { model: User, as: "host", attributes: ["id", "username"] },
       ],
       order: [["date", "ASC"], ["time", "ASC"]],
     });
-
-    console.log(`Fetched ${matches.length} matches for user ${userId}`);
     res.status(200).json(matches);
   } catch (error) {
     console.error("Error fetching user matches:", error);
@@ -149,14 +147,11 @@ export const leaveMatch = async (req, res) => {
     const { id } = req.params;
     const userId = Number(req.user.id);
 
-    console.log(`[LeaveMatch] User ${userId} attempting to leave match ${id}`);
-
     const match = await Match.findByPk(id, {
       include: [{ model: User, as: "players", attributes: ["id"] }],
     });
 
     if (!match) {
-      console.log(`[LeaveMatch] Match ${id} not found`);
       return res.status(404).json({ message: "Match not found" });
     }
 
@@ -164,23 +159,19 @@ export const leaveMatch = async (req, res) => {
     const isMember = match.players.some(player => Number(player.id) === userId);
     
     if (!isMember) {
-      console.log(`[LeaveMatch] User ${userId} is not in the player list for match ${id}. List:`, match.players.map(p => p.id));
       return res.status(400).json({ message: "You are not a member of this squad" });
     }
 
     // Remove player from the join table
     await match.removePlayer(userId);
-    console.log(`[LeaveMatch] User ${userId} removed from MatchPlayers for match ${id}`);
 
     // Decrement currentPlayers count
     await match.decrement("currentPlayers");
-    console.log(`[LeaveMatch] currentPlayers decremented for match ${id}`);
 
     // Update status if it was full
     const updatedMatch = await match.reload();
     if (updatedMatch.status === "full" && updatedMatch.currentPlayers < updatedMatch.maxPlayers) {
       await updatedMatch.update({ status: "open" });
-      console.log(`[LeaveMatch] Match ${id} status updated to 'open'`);
     }
 
     res.status(200).json({ message: "Successfully left the match" });
@@ -195,22 +186,17 @@ export const deleteMatch = async (req, res) => {
     const { id } = req.params;
     const userId = Number(req.user.id);
 
-    console.log(`[DeleteMatch] User ${userId} attempting to delete match ${id}`);
-
     const match = await Match.findByPk(id);
     if (!match) {
-      console.log(`[DeleteMatch] Match ${id} not found`);
       return res.status(404).json({ message: "Match not found" });
     }
 
     // Only host can delete
     if (Number(match.hostId) !== userId) {
-      console.log(`[DeleteMatch] Unauthorized: User ${userId} is not host ${match.hostId}`);
       return res.status(403).json({ message: "Only the host can delete this match" });
     }
 
     await match.destroy();
-    console.log(`[DeleteMatch] Match ${id} successfully destroyed`);
 
     res.status(200).json({ message: "Match deleted successfully" });
   } catch (error) {
