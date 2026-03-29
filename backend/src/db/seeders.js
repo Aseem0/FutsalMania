@@ -66,7 +66,11 @@ export const seedArenas = async () => {
 export const seedAdmin = async () => {
   try {
     const username = process.env.ADMIN_USERNAME || "Ram";
-    const password = process.env.ADMIN_PASSWORD || "Ram123";
+    const password = process.env.ADMIN_PASSWORD;
+    if (!password) {
+      console.warn("⚠️ ADMIN_PASSWORD not set in env, skipping admin seed.");
+      return;
+    }
     const email = process.env.ADMIN_EMAIL || "ram@futsalmania.com";
 
     const existingUser = await User.findOne({ where: { username } });
