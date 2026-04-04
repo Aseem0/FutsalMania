@@ -39,11 +39,13 @@ export default function HomeScreen() {
         fetchMyApplications(),
         fetchReceivedApplications(),
       ]);
-      setMatches(matchesRes.data);
-      setMyApplications(myAppsRes.data);
-      setReceivedApplications(receivedAppsRes.data);
+      setMatches(matchesRes.data || []);
+      setMyApplications(myAppsRes.data || []);
+      setReceivedApplications(receivedAppsRes.data || []);
     } catch (error) {
       console.error("Error fetching home data:", error);
+      // In a real app, you might use a toast here
+      alert("Connectivity Error: Could not connect to the server. Please check your network or if the backend is running.");
     } finally {
       setLoading(false);
     }
@@ -70,10 +72,10 @@ export default function HomeScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                onPress={() => router.push("/(auth)/login")}
+                onPress={() => router.push("/(profile)")}
                 className="h-8 w-8 rounded-full items-center justify-center border border-[#1F1F1F] bg-[#121212]"
               >
-                <MaterialCommunityIcons name="chevron-left" size={24} color="#ffffff" />
+                <MaterialCommunityIcons name="account-outline" size={20} color="#ffffff" />
               </TouchableOpacity>
             </View>
           </View>

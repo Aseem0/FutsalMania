@@ -35,9 +35,17 @@ const createUserModel = (sequelize) => {
         allowNull: true,
       },
       role: {
-        type: DataTypes.ENUM("user", "admin"),
+        type: DataTypes.ENUM("user", "admin", "manager"),
         allowNull: false,
         defaultValue: "user",
+      },
+      arenaId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "arenas",
+          key: "id",
+        },
       },
     },
     {

@@ -28,6 +28,12 @@ import {
   getTournaments,
   getTournamentById,
 } from "../controller/tournamentController.js";
+import {
+  createManager,
+  getManagers,
+  deleteManager,
+  updateManagerStatus,
+} from "../controller/managerController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -71,5 +77,11 @@ router.get("/recruitments/applications/received", authMiddleware, getReceivedApp
 router.post("/tournaments", authMiddleware, createTournament);
 router.get("/tournaments", getTournaments);
 router.get("/tournaments/:id", getTournamentById);
+
+// Manager Management (Admin only)
+router.post("/managers", authMiddleware, createManager);
+router.get("/managers", authMiddleware, getManagers);
+router.delete("/managers/:id", authMiddleware, deleteManager);
+router.patch("/managers/:id", authMiddleware, updateManagerStatus);
 
 export default router;

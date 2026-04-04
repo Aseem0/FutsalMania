@@ -2,15 +2,13 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-
-const API_HOST = "192.168.101.13"; 
+const API_HOST = "192.168.101.6";
 const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
 });
-
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("userToken");
@@ -19,6 +17,20 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      console.warn("Session expired or invalid. Clearing token...");
+      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem("username");
+      await AsyncStorage.removeItem("userRole");
+      // Optional: Redirect to login or trigger a global state reset here if needed
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const register = (userData) => {
   return api.post("/register", userData);

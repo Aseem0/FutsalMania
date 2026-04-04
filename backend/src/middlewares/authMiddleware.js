@@ -1,12 +1,4 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined in environment variables");
-}
 
 export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -15,11 +7,23 @@ export const authMiddleware = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+  const JWT_SECRET = process.env.JWT_SECRET;
+  
+  if (!JWT_SECRET) {
+     console.error("[AuthMiddleware] ❌ CRITICAL: JWT_SECRET is not defined in environment variables during request!");
+     return res.status(500).json({ message: "Server configuration error" });
+  }
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // Contains id and username
+    req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({ message: "Invalid or expired token" });
+    console.warn(`[AuthMiddleware] ⚠️  Unauthorized: ${error.message} (Path: ${req.path})`);
+    return res.status(403).json({ 
+      message: "Authentication failed",
+      error: error.message,
+      code: error.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "INVALID_TOKEN"
+    });
   }
 };

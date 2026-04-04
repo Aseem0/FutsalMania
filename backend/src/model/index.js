@@ -39,6 +39,9 @@ Match.belongsTo(User, { foreignKey: "hostId", as: "host" });
 Arena.hasMany(Match, { foreignKey: "arenaId" });
 Match.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
+Arena.hasMany(User, { foreignKey: "arenaId", as: "managers" });
+User.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
 // Many-to-Many for Players joining matches
 User.belongsToMany(Match, { through: "MatchPlayers", as: "playingMatches", foreignKey: "userId" });
 Match.belongsToMany(User, { through: "MatchPlayers", as: "players", foreignKey: "matchId" });

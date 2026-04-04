@@ -1,15 +1,11 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./*"]
     },
-    "jsx": "react-jsx",
-    "moduleResolution": "node"
+    "jsx": "react-jsx"
   },
-  "exclude": [
-    "node_modules",
-    ".expo",
-    "export"
-  ]
+  "exclude": ["node_modules", ".expo", "export"]
 }
