@@ -45,6 +45,12 @@ export const getTournaments = async (req, res) => {
 export const getTournamentById = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Validate ID is a number
+    if (isNaN(id) || isNaN(parseInt(id))) {
+      return res.status(400).json({ message: "Invalid tournament ID format" });
+    }
+
     const tournament = await Tournament.findByPk(id);
     
     if (!tournament) {
@@ -53,6 +59,10 @@ export const getTournamentById = async (req, res) => {
 
     res.status(200).json(tournament);
   } catch (error) {
+    // Handle Postgres/Sequelize error for invalid integer syntax
+    if (error.name === 'SequelizeDatabaseError' && error.parent?.code === '22P02') {
+      return res.status(400).json({ message: "Invalid tournament ID format" });
+    }
     console.error("Get tournament by id error:", error);
     res.status(500).json({ message: "Failed to fetch tournament" });
   }

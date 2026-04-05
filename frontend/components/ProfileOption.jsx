@@ -25,7 +25,7 @@ const ProfileOption = ({
       </View>
       
       <View className="flex-1">
-        <Text className="text-white font-inter-semibold text-base">{title}</Text>
+        <Text className="font-inter-semibold text-base" style={{ color: color === "#FFB300" ? "#FFFFFF" : color }}>{title}</Text>
         {subtitle && <Text className="text-[#A1A1AA] text-xs font-inter-medium leading-4 mt-0.5">{subtitle}</Text>}
       </View>
 

@@ -14,6 +14,9 @@ api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("userToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // Ensure no stale token remains if AsyncStorage was cleared
+    delete config.headers.Authorization;
   }
   return config;
 });
@@ -21,16 +24,19 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // If we get a 401/403, it means the session is definitely invalid
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.warn("Session expired or invalid. Clearing token...");
-      await AsyncStorage.removeItem("userToken");
-      await AsyncStorage.removeItem("username");
-      await AsyncStorage.removeItem("userRole");
-      // Optional: Redirect to login or trigger a global state reset here if needed
+      console.warn("Session expired or invalid. Clearing tokens...");
+      await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
     }
     return Promise.reject(error);
   }
 );
+
+export const logoutUser = async () => {
+  await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
+  // Optional: Add any backend logout call here if exists
+};
 
 export const register = (userData) => {
   return api.post("/register", userData);

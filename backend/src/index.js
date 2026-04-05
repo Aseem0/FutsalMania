@@ -15,12 +15,14 @@ import router from "./routes/routes.js";
 
 const app = express();
 
-app.use(cors({
-  origin: "*", // Allow all origins for local development
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*", // Allow all origins for local development
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use("/api", router);
 
@@ -38,9 +40,9 @@ const startServer = async () => {
   await dbConnection();
   await seedArenas();
   await seedAdmin();
-  
+
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
   });
 };
 

@@ -10,7 +10,11 @@ import {
   X,
   User,
   Search,
-  ChevronDown
+  ChevronDown,
+  Calendar,
+  Clock,
+  Briefcase,
+  Users as CustomersIcon
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
@@ -24,15 +28,22 @@ const Sidebar = ({ isOpen, toggle }) => {
 
   const user = JSON.parse(localStorage.getItem('adminUser'));
   const isAdmin = user?.role === 'admin';
+  const isManager = user?.role === 'manager';
 
-  const menuItems = [
-    { name: "Dashboard", path: isAdmin ? "/dashboard" : "/manager/dashboard", icon: LayoutDashboard },
-    { name: "Users", path: "/users", icon: UsersIcon, adminOnly: true },
-    { name: "Manage Managers", path: "/managers", icon: User, adminOnly: true },
+  const menuItems = isAdmin ? [
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Users", path: "/users", icon: UsersIcon },
+    { name: "Manage Managers", path: "/managers", icon: User },
     { name: "Grounds", path: "/grounds", icon: MapPin },
     { name: "Matches", path: "/matches", icon: Trophy },
     { name: "Bookings", path: "/bookings", icon: CalendarCheck },
-  ].filter(item => !item.adminOnly || isAdmin);
+  ] : [
+    { name: "Dashboard", path: "/manager/dashboard", icon: LayoutDashboard },
+    { name: "Arena Overview", path: "/manager/arena", icon: MapPin },
+    { name: "Bookings", path: "/manager/bookings", icon: Calendar },
+    { name: "Schedule", path: "/manager/schedule", icon: Clock },
+    { name: "Customers", path: "/manager/customers", icon: CustomersIcon },
+  ];
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");

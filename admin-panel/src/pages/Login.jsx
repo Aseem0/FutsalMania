@@ -19,8 +19,8 @@ export default function Login() {
       const response = await api.post("/login", { username, password });
       const { userData } = response.data;
 
-      if (userData.role !== "admin") {
-        setError("Access denied. Admin privileges required.");
+      if (userData.role !== "admin" && userData.role !== "manager") {
+        setError("Access denied. You do not have permission to access this console.");
         localStorage.removeItem("adminToken");
         localStorage.removeItem("adminUser");
         setLoading(false);

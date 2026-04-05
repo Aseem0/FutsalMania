@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { fetchMyMatches, fetchMyApplications, fetchReceivedApplications } from "../../services/api";
 import { formatDate } from "../../utils/dateUtils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -33,6 +34,12 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.log("Home: No token found. Skipping fetch.");
+        return;
+      }
+
       setLoading(true);
       const [matchesRes, myAppsRes, receivedAppsRes] = await Promise.all([
         fetchMyMatches(),
@@ -43,11 +50,16 @@ export default function HomeScreen() {
       setMyApplications(myAppsRes.data || []);
       setReceivedApplications(receivedAppsRes.data || []);
     } catch (error) {
+      // Don't show connectivity error if it's an authentication error (user might be logging out)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.log("Home: Authentication error during fetch. User likely logged out.");
+        return;
+      }
+      
       console.error("Error fetching home data:", error);
-      // In a real app, you might use a toast here
       alert("Connectivity Error: Could not connect to the server. Please check your network or if the backend is running.");
     } finally {
-      setLoading(false);
+      if (loading) setLoading(false);
     }
   };
 
@@ -72,7 +84,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                onPress={() => router.push("/(profile)")}
+                onPress={() => router.push("/profile")}
                 className="h-8 w-8 rounded-full items-center justify-center border border-[#1F1F1F] bg-[#121212]"
               >
                 <MaterialCommunityIcons name="account-outline" size={20} color="#ffffff" />
@@ -191,10 +203,14 @@ export default function HomeScreen() {
                   <TouchableOpacity 
                     key={match.id} 
                     activeOpacity={0.9}
-                    onPress={() => router.push({
-                      pathname: "/(matches)/match-details",
-                      params: { id: match.id }
-                    })}
+                    onPress={() => {
+                      if (!isNaN(match.id)) {
+                        router.push({
+                          pathname: "/(matches)/match-details",
+                          params: { id: match.id }
+                        });
+                      }
+                    }}
                     className="relative w-full h-56 rounded-xl overflow-hidden border border-[#1F1F1F]"
                   >
                     <Image

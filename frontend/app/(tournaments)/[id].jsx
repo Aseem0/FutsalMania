@@ -22,6 +22,13 @@ export default function TournamentDetails() {
 
   useEffect(() => {
     const loadTournament = async () => {
+      // Validate ID is numeric before calling API
+      if (!id || isNaN(parseInt(id))) {
+        console.warn(`[TournamentDetails] Invalid tournament ID: ${id}`);
+        setLoading(false);
+        return;
+      }
+      
       try {
         setLoading(true);
         const res = await fetchTournamentById(id);

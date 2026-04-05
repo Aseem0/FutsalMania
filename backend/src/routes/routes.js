@@ -33,8 +33,22 @@ import {
   getManagers,
   deleteManager,
   updateManagerStatus,
+  getManagerArena,
+  getManagerBookings,
+  updateManagerBooking,
+  getManagerSchedule,
+  updateManagerSlot,
+  getManagerCustomers,
 } from "../controller/managerController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+
+const managerMiddleware = (req, res, next) => {
+  if (req.user && req.user.role === 'manager') {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Manager role required." });
+  }
+};
 
 const router = Router();
 
@@ -83,5 +97,13 @@ router.post("/managers", authMiddleware, createManager);
 router.get("/managers", authMiddleware, getManagers);
 router.delete("/managers/:id", authMiddleware, deleteManager);
 router.patch("/managers/:id", authMiddleware, updateManagerStatus);
+
+// Manager Module Routes (Manager restricted)
+router.get("/manager/arena", authMiddleware, managerMiddleware, getManagerArena);
+router.get("/manager/bookings", authMiddleware, managerMiddleware, getManagerBookings);
+router.patch("/manager/bookings/:id", authMiddleware, managerMiddleware, updateManagerBooking);
+router.get("/manager/schedule", authMiddleware, managerMiddleware, getManagerSchedule);
+router.patch("/manager/schedule/:id", authMiddleware, managerMiddleware, updateManagerSlot);
+router.get("/manager/customers", authMiddleware, managerMiddleware, getManagerCustomers);
 
 export default router;

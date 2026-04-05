@@ -9,16 +9,32 @@ import Layout from './components/Layout';
 import ManagerList from './pages/admin/managers/ManagerList';
 import CreateManager from './pages/admin/managers/CreateManager';
 import ManagerDashboard from './pages/manager/Dashboard';
+import ArenaOverview from './pages/manager/ArenaOverview';
+import BookingManagement from './pages/manager/BookingManagement';
+import ScheduleManagement from './pages/manager/ScheduleManagement';
+import CustomerManagement from './pages/manager/CustomerManagement';
 
-const ProtectedRoute = ({ children, allowedRole = 'admin' }) => {
+const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem('adminToken');
   const user = JSON.parse(localStorage.getItem('adminUser'));
 
-  if (!token || !user || (allowedRole === 'admin' && user.role !== 'admin') || (allowedRole === 'manager' && user.role !== 'manager')) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
+  if (allowedRole && user.role !== allowedRole) {
+    // If user is logged in but doesn't have the specific role for this route
+    // Redirect them to their own dashboard instead of login
+    return <Navigate to={user.role === 'manager' ? '/manager/dashboard' : '/dashboard'} replace />;
+  }
+
   return children;
+};
+
+const RoleBasedRedirect = () => {
+  const user = JSON.parse(localStorage.getItem('adminUser'));
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.role === 'manager' ? '/manager/dashboard' : '/dashboard'} replace />;
 };
 
 function App() {
@@ -28,12 +44,12 @@ function App() {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="admin">
             <Layout />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<RoleBasedRedirect />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="grounds" element={<Grounds />} />
@@ -54,8 +70,12 @@ function App() {
       >
         <Route index element={<Navigate to="/manager/dashboard" replace />} />
         <Route path="dashboard" element={<ManagerDashboard />} />
+        <Route path="arena" element={<ArenaOverview />} />
+        <Route path="bookings" element={<BookingManagement />} />
+        <Route path="schedule" element={<ScheduleManagement />} />
+        <Route path="customers" element={<CustomerManagement />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<RoleBasedRedirect />} />
     </Routes>
   );
 }

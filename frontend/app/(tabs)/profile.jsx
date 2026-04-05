@@ -11,13 +11,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import ProfileOption from '../../components/ProfileOption';
-import { fetchUserProfile } from "../../services/api";
+import { fetchUserProfile, logoutUser } from "../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,6 +48,24 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+     
+      
+      // Clear all session data using the centralized helper
+      await logoutUser();
+      
+      
+      
+      // Navigate directly to the login screen
+      router.replace("/(auth)/login");
+      
+    } catch (error) {
+      console.error("Logout process error:", error);
+      
+    }
+  };
+
   if (loading) {
     return (
       <View className="flex-1 bg-black items-center justify-center">
@@ -77,7 +94,7 @@ export default function ProfileScreen() {
 
         <ScrollView 
           className="flex-1 px-5 pt-8" 
-          contentContainerStyle={{ paddingBottom: 100 }} 
+          contentContainerStyle={{ paddingBottom: 160 }} 
           showsVerticalScrollIndicator={false}
         >
           {/* Profile Card */}
@@ -168,23 +185,7 @@ export default function ProfileScreen() {
             <ProfileOption 
               icon="logout-variant" 
               title="Logout" 
-              onPress={() => {
-                Alert.alert(
-                  "Logout",
-                  "Are you sure you want to logout?",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Logout",
-                      style: "destructive",
-                      onPress: async () => {
-                        await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
-                        router.replace('/(auth)/login');
-                      }
-                    }
-                  ]
-                );
-              }}
+              onPress={handleLogout}
               color="#F87171"
             />
           </View>

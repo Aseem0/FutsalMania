@@ -1,6 +1,7 @@
 import { generateAccessToken, generateRefreshToken } from "../../auth/auth.js";
 import { User } from "../model/index.js";
 import bcryptjs from "bcryptjs";
+import { Op } from "sequelize";
 
 export const registerController = async (req, res) => {
   const { username, email, password } = req.body;
@@ -38,7 +39,15 @@ export const registerController = async (req, res) => {
 export const loginController = async (req, res) => {
   const { username, password } = req.body;
   try {
-    const existingUser = await User.findOne({ where: { username: username } });
+    const existingUser = await User.findOne({ 
+      where: { 
+        [Op.or]: [
+          { username: username },
+          { email: username }
+        ]
+      } 
+    });
+
     if (existingUser != null) {
       const isValidPassword = await bcryptjs.compare(
         password,
@@ -47,7 +56,6 @@ export const loginController = async (req, res) => {
       if (!isValidPassword) {
         return res.status(401).json("Invalid password");
       }
-      //   console.log(existingUser.dataValues);
       const accessToken = await generateAccessToken(existingUser.dataValues);
       const refreshToken = await generateRefreshToken(existingUser.dataValues);
 
@@ -71,7 +79,7 @@ export const loginController = async (req, res) => {
       return res.status(404).json("User not found");
     }
   } catch (error) {
-    console.log("Internal error");
+    console.log("Internal error", error);
     res.status(500).json("Internal server error");
   }
 };

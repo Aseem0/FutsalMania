@@ -7,6 +7,8 @@ import createTeamMatchModel from "./teamMatchModel.js";
 import createPlayerRecruitmentModel from "./playerRecruitmentModel.js";
 import createRecruitmentApplicationModel from "./recruitmentApplicationModel.js";
 import createTournamentModel from "./tournamentModel.js";
+import createBookingModel from "./bookingModel.js";
+import createScheduleModel from "./scheduleModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -31,6 +33,8 @@ const TeamMatch = createTeamMatchModel(sequelize);
 const PlayerRecruitment = createPlayerRecruitmentModel(sequelize);
 const RecruitmentApplication = createRecruitmentApplicationModel(sequelize);
 const Tournament = createTournamentModel(sequelize);
+const Booking = createBookingModel(sequelize);
+const Schedule = createScheduleModel(sequelize);
 
 // Set up associations
 User.hasMany(Match, { foreignKey: "hostId", as: "hostedMatches" });
@@ -41,6 +45,16 @@ Match.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
 Arena.hasMany(User, { foreignKey: "arenaId", as: "managers" });
 User.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
+// --- Bookings & Schedules ---
+Arena.hasMany(Booking, { foreignKey: "arenaId", as: "bookings" });
+Booking.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
+User.hasMany(Booking, { foreignKey: "userId", as: "bookings" });
+Booking.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+Arena.hasMany(Schedule, { foreignKey: "arenaId", as: "schedules" });
+Schedule.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
 
 // Many-to-Many for Players joining matches
 User.belongsToMany(Match, { through: "MatchPlayers", as: "playingMatches", foreignKey: "userId" });
@@ -83,5 +97,5 @@ RecruitmentApplication.belongsTo(User, { foreignKey: "userId", as: "applicant" }
 PlayerRecruitment.hasMany(RecruitmentApplication, { foreignKey: "recruitmentId", as: "applications" });
 RecruitmentApplication.belongsTo(PlayerRecruitment, { foreignKey: "recruitmentId", as: "recruitment" });
 
-export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament };
-export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament };
+export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament, Booking, Schedule };
+export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament, Booking, Schedule };
