@@ -79,7 +79,7 @@ export default function ArenaOverview() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Operating Hours</p>
-                    <p className="text-zinc-300 font-medium">06:00 AM - 10:00 PM</p>
+                    <p className="text-zinc-300 font-medium">{arena.openingHours || "06:00 AM – 10:00 PM"}</p>
                   </div>
                 </div>
               </div>

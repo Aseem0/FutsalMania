@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-const API_HOST = "192.168.101.6";
+const API_HOST = "192.168.101.4";
 const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({

@@ -42,14 +42,14 @@ export const getManagers = async (req, res) => {
           attributes: ["name"],
         },
       ],
-      attributes: ["id", "username", "email", "role", "arenaId"],
+      attributes: ["id", "username", "email", "role", "arenaId", "status"],
     });
 
     const formattedManagers = managers.map((m) => ({
       id: m.id,
       name: m.username,
       email: m.email,
-      status: "active",
+      status: m.status,
       futsal_name: m.arena?.name || "Unassigned",
     }));
 
@@ -76,6 +76,38 @@ export const deleteManager = async (req, res) => {
   }
 };
 
+export const updateManager = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, futsal_id } = req.body;
+  try {
+    const manager = await User.findByPk(id);
+    if (!manager || manager.role !== "manager") {
+      return res.status(404).json({ message: "Manager not found" });
+    }
+
+    if (email && email !== manager.email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(409).json({ message: "Email already in use by another account" });
+      }
+    }
+
+    await manager.update({
+      username: name || manager.username,
+      email: email || manager.email,
+      arenaId: futsal_id !== undefined ? futsal_id : manager.arenaId
+    });
+
+    return res.status(200).json({
+      message: "Manager updated successfully",
+      data: manager
+    });
+  } catch (error) {
+    console.error("Update manager error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const updateManagerStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -84,9 +116,39 @@ export const updateManagerStatus = async (req, res) => {
     if (!manager || manager.role !== "manager") {
       return res.status(404).json({ message: "Manager not found" });
     }
-    return res.status(200).json({ message: `Manager status updated to ${status}` });
+
+    await manager.update({ status });
+
+    return res.status(200).json({ 
+      message: `Manager status updated to ${status}`,
+      data: manager
+    });
   } catch (error) {
     console.error("Update manager status error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllBookings = async (req, res) => {
+  try {
+    const { status, date } = req.query;
+
+    const where = {};
+    if (status) where.status = status;
+    if (date) where.date = date;
+
+    const bookings = await Booking.findAll({
+      where,
+      include: [
+        { model: User, as: "user", attributes: ["username", "email"] },
+        { model: Arena, as: "arena", attributes: ["name"] }
+      ],
+      order: [["date", "DESC"], ["startTime", "ASC"]]
+    });
+
+    return res.status(200).json(bookings);
+  } catch (error) {
+    console.error("Get all bookings error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

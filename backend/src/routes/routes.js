@@ -4,8 +4,12 @@ import {
   registerController,
   updateProfileController,
   getProfileController,
+  getUsersCountController,
+  getAllUsersController,
+  adminCreateUserController,
+  deleteUserController,
 } from "../controller/userController.js";
-import { getArenas } from "../controller/arenaController.js";
+import { getArenas, createArena, updateArena, deleteArena } from "../controller/arenaController.js";
 import {
   createMatch,
   getMatches,
@@ -27,11 +31,14 @@ import {
   createTournament,
   getTournaments,
   getTournamentById,
+  updateTournament,
+  deleteTournament,
 } from "../controller/tournamentController.js";
 import {
   createManager,
   getManagers,
   deleteManager,
+  updateManager,
   updateManagerStatus,
   getManagerArena,
   getManagerBookings,
@@ -39,6 +46,7 @@ import {
   getManagerSchedule,
   updateManagerSlot,
   getManagerCustomers,
+  getAllBookings,
 } from "../controller/managerController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -50,15 +58,31 @@ const managerMiddleware = (req, res, next) => {
   }
 };
 
+const adminMiddleware = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'Admin')) {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Admin role required." });
+  }
+};
+
 const router = Router();
 
 router.post("/register", registerController);
 router.post("/login", loginController);
 router.get("/arenas", getArenas);
+router.post("/arenas", authMiddleware, adminMiddleware, createArena);
+router.put("/arenas/:id", authMiddleware, adminMiddleware, updateArena);
+router.delete("/arenas/:id", authMiddleware, adminMiddleware, deleteArena);
 
 // User Routes
 router.get("/users/profile", authMiddleware, getProfileController);
 router.put("/users/profile", authMiddleware, updateProfileController);
+router.get("/users/count", authMiddleware, getUsersCountController);
+router.get("/users", authMiddleware, getAllUsersController);
+router.post("/users/admin", authMiddleware, adminMiddleware, adminCreateUserController);
+router.delete("/users/:id", authMiddleware, adminMiddleware, deleteUserController);
+router.get("/bookings", authMiddleware, adminMiddleware, getAllBookings);
 
 // Match Routes (Individual)
 router.post("/matches", authMiddleware, createMatch);
@@ -88,13 +112,16 @@ router.get("/recruitments/applications/my", authMiddleware, getMyApplications);
 router.get("/recruitments/applications/received", authMiddleware, getReceivedApplications);
 
 // Tournament Routes
-router.post("/tournaments", authMiddleware, createTournament);
+router.post("/tournaments", authMiddleware, adminMiddleware, createTournament);
 router.get("/tournaments", getTournaments);
 router.get("/tournaments/:id", getTournamentById);
+router.put("/tournaments/:id", authMiddleware, adminMiddleware, updateTournament);
+router.delete("/tournaments/:id", authMiddleware, adminMiddleware, deleteTournament);
 
 // Manager Management (Admin only)
 router.post("/managers", authMiddleware, createManager);
 router.get("/managers", authMiddleware, getManagers);
+router.put("/managers/:id", authMiddleware, adminMiddleware, updateManager);
 router.delete("/managers/:id", authMiddleware, deleteManager);
 router.patch("/managers/:id", authMiddleware, updateManagerStatus);
 

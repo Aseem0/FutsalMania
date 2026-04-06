@@ -90,6 +90,10 @@ PlayerRecruitment.belongsTo(User, { foreignKey: "hostId", as: "host" });
 Team.hasMany(PlayerRecruitment, { foreignKey: "teamId", as: "teamRecruitments" });
 PlayerRecruitment.belongsTo(Team, { foreignKey: "teamId", as: "team" });
 
+// --- Tournament Associations ---
+Arena.hasMany(Tournament, { foreignKey: "arenaId", as: "tournaments" });
+Tournament.belongsTo(Arena, { foreignKey: "arenaId", as: "arena" });
+
 // Recruitment Application Associations
 User.hasMany(RecruitmentApplication, { foreignKey: "userId", as: "applications" });
 RecruitmentApplication.belongsTo(User, { foreignKey: "userId", as: "applicant" });

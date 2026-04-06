@@ -34,8 +34,9 @@ const Sidebar = ({ isOpen, toggle }) => {
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "Users", path: "/users", icon: UsersIcon },
     { name: "Manage Managers", path: "/managers", icon: User },
-    { name: "Grounds", path: "/grounds", icon: MapPin },
-    { name: "Matches", path: "/matches", icon: Trophy },
+    { name: "Futsal Arenas", path: "/grounds", icon: MapPin },
+    { name: "Matches", path: "/matches", icon: Clock },
+    { name: "Tournaments", path: "/tournaments", icon: Trophy },
     { name: "Bookings", path: "/bookings", icon: CalendarCheck },
   ] : [
     { name: "Dashboard", path: "/manager/dashboard", icon: LayoutDashboard },

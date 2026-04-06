@@ -12,16 +12,21 @@ import {
   ShieldAlert,
   Building2,
   Ban,
+  Edit2,
+  MapPin,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../../../services/api";
 
 export default function ManagerList() {
   const [managers, setManagers] = useState([]);
+  const [arenas, setArenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [managerToEdit, setManagerToEdit] = useState(null);
   const [managerToDelete, setManagerToDelete] = useState(null);
   const navigate = useNavigate();
 
@@ -39,8 +44,18 @@ export default function ManagerList() {
     }
   };
 
+  const fetchArenas = async () => {
+    try {
+      const res = await api.get("/arenas");
+      setArenas(res.data);
+    } catch (err) {
+      console.error("Error fetching arenas:", err);
+    }
+  };
+
   useEffect(() => {
     fetchManagers();
+    fetchArenas();
   }, []);
 
   const handleDelete = async () => {
@@ -57,19 +72,10 @@ export default function ManagerList() {
     }
   };
 
-  const toggleStatus = async (manager) => {
-    const newStatus = manager.status === "active" ? "disabled" : "active";
-    try {
-      await api.patch(`/managers/${manager.id}`, { status: newStatus });
-      setManagers(
-        managers.map((m) =>
-          m.id === manager.id ? { ...m, status: newStatus } : m,
-        ),
-      );
-    } catch (err) {
-      console.error("Error toggling manager status:", err);
-      alert("Failed to update status.");
-    }
+  const handleUpdateSuccess = (updatedManager) => {
+    fetchManagers();
+    setIsEditModalOpen(false);
+    setManagerToEdit(null);
   };
 
   const filteredManagers = managers.filter(
@@ -79,7 +85,19 @@ export default function ManagerList() {
   );
 
   return (
-    <div className="space-y-10 pb-12">
+    <div className="space-y-10 pb-12 relative">
+      {isEditModalOpen && (
+        <EditManagerModal 
+          manager={managerToEdit}
+          arenas={arenas}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setManagerToEdit(null);
+          }}
+          onSuccess={handleUpdateSuccess}
+        />
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex flex-col gap-2">
@@ -153,13 +171,7 @@ export default function ManagerList() {
               <thead>
                 <tr className="border-b border-zinc-900 bg-zinc-900/10">
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">
-                    Manager Details
-                  </th>
-                  <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">
                     Assigned Arena
-                  </th>
-                  <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest text-center">
-                    Status
                   </th>
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest text-right pr-12">
                     Actions
@@ -199,36 +211,16 @@ export default function ManagerList() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-6 text-center">
-                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-zinc-900/50 bg-zinc-900/30">
-                        {manager.status === "active" ? (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Ban className="w-4 h-4 text-red-500" />
-                        )}
-                        <span
-                          className={
-                            manager.status === "active"
-                              ? "text-green-500 text-xs font-bold uppercase"
-                              : "text-red-500 text-xs font-bold uppercase"
-                          }
-                        >
-                          {manager.status}
-                        </span>
-                      </div>
-                    </td>
                     <td className="px-8 py-6 text-right pr-10">
-                      <div className="flex items-center justify-end gap-3 translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                      <div className="flex items-center justify-end gap-3 transition-all">
                         <button
-                          onClick={() => toggleStatus(manager)}
-                          title={
-                            manager.status === "active"
-                              ? "Disable Manager"
-                              : "Activate Manager"
-                          }
-                          className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-amber-500/10 hover:text-amber-500 text-zinc-500 transition-all"
+                          onClick={() => {
+                            setManagerToEdit(manager);
+                            setIsEditModalOpen(true);
+                          }}
+                          className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-blue-500/10 hover:text-blue-500 text-zinc-500 transition-all shadow-lg"
                         >
-                          <Ban className="w-4.5 h-4.5" />
+                          <Edit2 className="w-4.5 h-4.5" />
                         </button>
                         <button
                           onClick={() => {
@@ -248,7 +240,7 @@ export default function ManagerList() {
           )}
 
           <div className="px-8 py-6 border-t border-zinc-900 flex items-center justify-between text-zinc-600 text-xs font-bold uppercase tracking-widest bg-zinc-900/5">
-            <span>Platform Security Audit Log: Enbaled</span>
+            <span>Platform Security Audit Log: Enabled</span>
             <div className="flex items-center gap-4">
               <ShieldCheck className="w-4 h-4 text-amber-500" />
               <span>Admin Controlled</span>
@@ -294,6 +286,118 @@ export default function ManagerList() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function EditManagerModal({ manager, arenas, onClose, onSuccess }) {
+  const [formData, setFormData] = useState({
+    name: manager?.name || "",
+    email: manager?.email || "",
+    futsal_id: manager?.futsal_id || manager?.arenaId || "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.put(`/managers/${manager.id}`, formData);
+      onSuccess(response.data.data);
+    } catch (err) {
+      console.error("Error updating manager:", err);
+      setError(err.response?.data?.message || "Failed to update manager details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+      <div className="bg-zinc-950 border border-zinc-900 w-full max-w-md rounded-[40px] p-10 relative shadow-2xl animate-in zoom-in-95">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-outfit-bold text-white tracking-tight">Edit Manager</h2>
+            <p className="text-xs text-zinc-500 font-medium">Update profile for {manager?.name}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
+            <XCircle className="w-7 h-7" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-500 text-sm font-medium">
+            <ShieldAlert className="w-5 h-5 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-1">Full Name</label>
+            <input
+              required
+              type="text"
+              placeholder="Full Name"
+              className="bg-zinc-900/50 border border-zinc-800 text-white rounded-2xl px-6 py-4 w-full focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-1">Email Address</label>
+            <input
+              required
+              type="email"
+              placeholder="manager@futsal.com"
+              className="bg-zinc-900/50 border border-zinc-800 text-white rounded-2xl px-6 py-4 w-full focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest px-1">Assigned Futsal Arena</label>
+            <div className="relative">
+               <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600" />
+               <select
+                 required
+                 className="bg-zinc-900/50 border border-zinc-800 text-white rounded-2xl pl-14 pr-6 py-4 w-full focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium appearance-none cursor-pointer"
+                 value={formData.futsal_id}
+                 onChange={(e) => setFormData({ ...formData, futsal_id: e.target.value })}
+               >
+                 <option value="" disabled>Choose an arena...</option>
+                 {arenas.map((arena) => (
+                   <option key={arena.id} value={arena.id}>
+                     {arena.name}
+                   </option>
+                 ))}
+               </select>
+            </div>
+          </div>
+
+          <div className="pt-4 flex flex-col gap-3">
+            <button
+              disabled={loading}
+              type="submit"
+              className="w-full bg-white text-black py-5 rounded-[24px] font-outfit-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl"
+            >
+              {loading ? "Saving Changes..." : "Save Changes"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full bg-zinc-900 text-white py-4 rounded-[20px] font-bold text-sm border border-zinc-800 hover:bg-zinc-800 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

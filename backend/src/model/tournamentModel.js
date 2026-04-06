@@ -23,7 +23,11 @@ const createTournamentModel = (sequelize) => {
       },
       location: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+      },
+      arenaId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       entryFee: {
         type: DataTypes.INTEGER,

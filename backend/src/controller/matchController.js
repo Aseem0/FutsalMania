@@ -191,9 +191,9 @@ export const deleteMatch = async (req, res) => {
       return res.status(404).json({ message: "Match not found" });
     }
 
-    // Only host can delete
-    if (Number(match.hostId) !== userId) {
-      return res.status(403).json({ message: "Only the host can delete this match" });
+    // Only host or admin can delete
+    if (Number(match.hostId) !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Only the host or an administrator can delete this match" });
     }
 
     await match.destroy();

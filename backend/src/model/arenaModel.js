@@ -22,13 +22,28 @@ const createArenaModel = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      distance: {
-        type: DataTypes.STRING,
+      price: {
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
       image: {
         type: DataTypes.TEXT,
         allowNull: true,
+      },
+      openingHours: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: "06:00 AM – 10:00 PM",
+      },
+      infrastructure: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: "Turf Pitch, LED Lighting, Changing Rooms, Parking",
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "active",
       },
     },
     {

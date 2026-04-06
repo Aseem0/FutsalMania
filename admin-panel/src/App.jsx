@@ -5,9 +5,12 @@ import Users from './pages/Users';
 import Grounds from './pages/Grounds';
 import Matches from './pages/Matches';
 import Bookings from './pages/Bookings';
+import Tournaments from './pages/Tournaments';
 import Layout from './components/Layout';
 import ManagerList from './pages/admin/managers/ManagerList';
 import CreateManager from './pages/admin/managers/CreateManager';
+import CreateTournament from './pages/admin/tournaments/CreateTournament';
+import EditTournament from './pages/admin/tournaments/EditTournament';
 import ManagerDashboard from './pages/manager/Dashboard';
 import ArenaOverview from './pages/manager/ArenaOverview';
 import BookingManagement from './pages/manager/BookingManagement';
@@ -54,6 +57,9 @@ function App() {
         <Route path="users" element={<Users />} />
         <Route path="grounds" element={<Grounds />} />
         <Route path="matches" element={<Matches />} />
+        <Route path="tournaments" element={<Tournaments />} />
+        <Route path="tournaments/create" element={<CreateTournament />} />
+        <Route path="tournaments/edit/:id" element={<EditTournament />} />
         <Route path="bookings" element={<Bookings />} />
         <Route path="managers" element={<ManagerList />} />
         <Route path="managers/create" element={<CreateManager />} />

@@ -50,19 +50,13 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-     
-      
-      // Clear all session data using the centralized helper
       await logoutUser();
-      
-      
       
       // Navigate directly to the login screen
       router.replace("/(auth)/login");
       
     } catch (error) {
       console.error("Logout process error:", error);
-      
     }
   };
 

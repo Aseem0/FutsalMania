@@ -47,6 +47,11 @@ const createUserModel = (sequelize) => {
           key: "id",
         },
       },
+      status: {
+        type: DataTypes.ENUM("active", "disabled"),
+        allowNull: false,
+        defaultValue: "active",
+      },
     },
     {
       tableName: "users",
