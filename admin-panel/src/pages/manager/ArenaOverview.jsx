@@ -1,26 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Clock, Info, ShieldCheck, Star, Activity } from "lucide-react";
-import api from "../../services/api";
+import { MapPin, Clock, Info, ShieldCheck, Star, Activity, X } from "lucide-react";
+import api, { updateManagerArena } from "../../services/api";
 
 export default function ArenaOverview() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    price: "",
+    image: "",
+    openingHours: "",
+    infrastructure: ""
+  });
+
+  const fetchArena = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/manager/arena");
+      setData(response.data);
+      // Initialize form data
+      setFormData({
+        name: response.data.arena.name || "",
+        location: response.data.arena.location || "",
+        price: response.data.arena.price || "",
+        image: response.data.arena.image || "",
+        openingHours: response.data.arena.openingHours || "",
+        infrastructure: response.data.arena.infrastructure || ""
+      });
+    } catch (err) {
+      console.error("Error fetching arena overview:", err);
+      setError("Failed to load arena details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchArena = async () => {
-      try {
-        const response = await api.get("/manager/arena");
-        setData(response.data);
-      } catch (err) {
-        console.error("Error fetching arena overview:", err);
-        setError("Failed to load arena details.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchArena();
   }, []);
+
+  const handleUpdateInfo = async (e) => {
+    e.preventDefault();
+    try {
+      setIsUpdating(true);
+      await updateManagerArena(formData);
+      await fetchArena(); // Refresh data
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error("Error updating arena info:", err);
+      alert("Failed to update arena information.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Activity className="animate-spin text-amber-500 w-8 h-8" /></div>;
   if (error) return <div className="p-8 text-red-500 bg-red-500/10 border border-red-500/20 rounded-2xl">{error}</div>;
@@ -92,8 +128,10 @@ export default function ArenaOverview() {
                   <div>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                      <p className="text-green-500 font-bold uppercase tracking-widest text-xs">Active & Verified</p>
+                      <span className={`h-2 w-2 rounded-full ${arena.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+                      <p className={`${arena.status === 'active' ? 'text-green-500' : 'text-red-500'} font-bold uppercase tracking-widest text-xs`}>
+                        {arena.status === 'active' ? 'Active & Verified' : 'Inactive'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -104,7 +142,7 @@ export default function ArenaOverview() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Infrastructure</p>
-                    <p className="text-zinc-400 text-sm font-medium">Turf Pitch, LED Lighting, Changing Rooms, Parking</p>
+                    <p className="text-zinc-400 text-sm font-medium">{arena.infrastructure || "Turf Pitch, LED Lighting, Changing Rooms, Parking"}</p>
                   </div>
                 </div>
               </div>
@@ -153,14 +191,124 @@ export default function ArenaOverview() {
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-[32px] p-8">
             <h4 className="text-amber-500 font-bold mb-2">Quick Action</h4>
             <p className="text-zinc-500 text-sm font-medium leading-relaxed mb-4">
-              Need to update your arena's operational hours or pitch details? Contact support for changes.
+              Need to update your arena's operational hours or pitch details? Update them instantly below.
             </p>
-            <button className="w-full bg-amber-500 text-black py-3 rounded-2xl font-bold text-sm shadow-lg shadow-amber-500/20">
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="w-full bg-amber-500 text-black py-3 rounded-2xl font-bold text-sm shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition-colors"
+            >
               Update Info
             </button>
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)} />
+          <div className="relative bg-zinc-950 border border-zinc-900 rounded-[32px] w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="p-8 border-b border-zinc-900 flex justify-between items-center bg-zinc-950/50 backdrop-blur-xl">
+              <div>
+                <h2 className="text-2xl font-outfit-bold text-white tracking-tight">Update Arena Info</h2>
+                <p className="text-zinc-500 text-sm font-medium">Modify basic details about your arena.</p>
+              </div>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateInfo} className="p-8 space-y-6 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Arena Name</label>
+                  <input 
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="Enter arena name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Location</label>
+                  <input 
+                    type="text"
+                    required
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="City, State"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Price per Hour (NPR)</label>
+                  <input 
+                    type="number"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="e.g. 1500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Operating Hours</label>
+                  <input 
+                    type="text"
+                    value={formData.openingHours}
+                    onChange={(e) => setFormData({...formData, openingHours: e.target.value})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="e.g. 06:00 AM – 10:00 PM"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Infrastructure Details</label>
+                <textarea 
+                  value={formData.infrastructure}
+                  onChange={(e) => setFormData({...formData, infrastructure: e.target.value})}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors min-h-[100px]"
+                  placeholder="e.g. Turf Pitch, LED Lighting, Changing Rooms, Parking"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Image URL</label>
+                <input 
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                  placeholder="https://images.unsplash.com/..."
+                />
+              </div>
+
+              <div className="pt-4 flex gap-4">
+                <button 
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 bg-zinc-900 text-white py-4 rounded-2xl font-bold hover:bg-zinc-800 transition-all border border-zinc-800"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isUpdating}
+                  className="flex-[2] bg-amber-500 text-black py-4 rounded-2xl font-bold shadow-lg shadow-amber-500/20 hover:bg-amber-400 disabled:opacity-50 transition-all"
+                >
+                  {isUpdating ? "Saving Changes..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

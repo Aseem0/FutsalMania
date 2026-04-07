@@ -38,4 +38,17 @@ api.interceptors.response.use(
   }
 );
 
+// Arena Operations for Manager
+export const updateManagerArena = (arenaData) => {
+  return api.put('/manager/arena', arenaData);
+};
+
+export const createManagerBooking = (bookingData) => {
+  return api.post('/manager/bookings', bookingData);
+};
+
+export const deleteManagerBooking = (id) => {
+  return api.delete(`/manager/bookings/${id}`);
+};
+
 export default api;

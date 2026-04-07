@@ -26,8 +26,8 @@ export default function CustomerManagement() {
   }, []);
 
   const filteredCustomers = customers.filter(c => 
-    c.username?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    c.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    (c?.username?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
+    (c?.email?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   return (

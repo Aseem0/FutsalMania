@@ -1,4 +1,4 @@
-import { User, Arena, Booking, Schedule } from "../model/index.js";
+import { User, Arena, Booking, Schedule, Match } from "../model/index.js";
 import bcryptjs from "bcryptjs";
 import { Op } from "sequelize";
 
@@ -189,6 +189,31 @@ export const getManagerArena = async (req, res) => {
   }
 };
 
+export const updateManagerArena = async (req, res) => {
+  try {
+    const arenaId = req.user.arenaId;
+    if (!arenaId) return res.status(403).json({ message: "No arena assigned to this manager" });
+
+    const { name, location, price, image, openingHours, infrastructure } = req.body;
+    const arena = await Arena.findByPk(arenaId);
+    if (!arena) return res.status(404).json({ message: "Arena not found" });
+
+    await arena.update({
+      name: name || arena.name,
+      location: location || arena.location,
+      price: price !== undefined ? price : arena.price,
+      image: image || arena.image,
+      openingHours: openingHours || arena.openingHours,
+      infrastructure: infrastructure || arena.infrastructure,
+    });
+
+    return res.status(200).json({ message: "Arena updated successfully", data: arena });
+  } catch (error) {
+    console.error("Update manager arena error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getManagerBookings = async (req, res) => {
   try {
     const arenaId = req.user.arenaId;
@@ -219,8 +244,21 @@ export const updateManagerBooking = async (req, res) => {
     const booking = await Booking.findOne({ where: { id, arenaId } });
     
     if (!booking) return res.status(404).json({ message: "Booking not found" });
-
+    const oldStatus = booking.status;
     await booking.update({ status });
+
+    // Sync with Match if applicable
+    if (booking.matchId) {
+       const match = await Match.findByPk(booking.matchId);
+       if (match) {
+          if (status === "cancelled") {
+             await match.update({ status: "cancelled" });
+          } else if (status === "confirmed" && oldStatus !== "confirmed") {
+             // Match remains open or full as it was, but we could add logic here if needed
+          }
+       }
+    }
+
     return res.status(200).json({ message: "Booking updated successfully", data: booking });
   } catch (error) {
     console.error("Update manager booking error:", error);
@@ -231,12 +269,36 @@ export const updateManagerBooking = async (req, res) => {
 export const getManagerSchedule = async (req, res) => {
   try {
     const arenaId = req.user.arenaId;
+    const { date } = req.query; // New: optional date parameter
+
+    // Fetch base schedule
     const schedule = await Schedule.findAll({
       where: { arenaId },
       order: [["dayOfWeek", "ASC"], ["startTime", "ASC"]]
     });
 
-    return res.status(200).json(schedule);
+    if (!date) {
+      return res.status(200).json(schedule);
+    }
+
+    // --- Real-time Availability Logic ---
+    const arena = await Arena.findByPk(arenaId);
+    const bookings = await Booking.findAll({
+       where: { arenaId, date, status: ["pending", "confirmed"] },
+       include: [
+         { model: User, as: "user", attributes: ["username"] },
+         { model: Match, as: "match", attributes: ["id", "hostId"] }
+       ]
+    });
+
+    return res.status(200).json({
+       arena: {
+          openingHours: arena.openingHours,
+          name: arena.name
+       },
+       baseSchedule: schedule,
+       bookings: bookings
+    });
   } catch (error) {
     console.error("Get manager schedule error:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -264,12 +326,19 @@ export const getManagerCustomers = async (req, res) => {
   try {
     const arenaId = req.user.arenaId;
     
-    // Find unique users who have bookings for this arena
+    // Find unique registered users who have bookings for this arena
     const bookings = await Booking.findAll({
-      where: { arenaId },
-      include: [{ model: User, as: "user", attributes: ["id", "username", "email", "profilePicture"] }],
+      where: { 
+        arenaId,
+        userId: { [Op.ne]: null } // Only registered users
+      },
+      include: [{ 
+        model: User, 
+        as: "user", 
+        attributes: ["id", "username", "email", "profilePicture"] 
+      }],
       attributes: ["userId"],
-      group: ["userId", "user.id"]
+      group: ["userId", "user.id", "user.username", "user.email", "user.profilePicture"]
     });
 
     const customers = bookings.map(b => b.user);
@@ -277,6 +346,73 @@ export const getManagerCustomers = async (req, res) => {
     return res.status(200).json(customers);
   } catch (error) {
     console.error("Get manager customers error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteManagerBooking = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const arenaId = req.user.arenaId;
+    const booking = await Booking.findOne({ where: { id, arenaId } });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // If it's linked to a match, delete the match as well
+    if (booking.matchId) {
+       await Match.destroy({ where: { id: booking.matchId } });
+    }
+
+    await booking.destroy();
+
+    return res.status(200).json({ message: "Booking deleted successfully" });
+  } catch (error) {
+    console.error("Delete manager booking error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const createManagerBooking = async (req, res) => {
+  try {
+    const arenaId = req.user.arenaId;
+    const { date, startTime, customerName, totalPrice } = req.body;
+
+    // 1. Conflict Check
+    const existingBooking = await Booking.findOne({
+      where: {
+        arenaId,
+        date,
+        startTime,
+        status: ["pending", "confirmed"]
+      }
+    });
+
+    if (existingBooking) {
+      return res.status(409).json({ message: "This slot is already booked." });
+    }
+
+    // 2. Calculate endTime (assume 1hr)
+    const [hours, minutes] = startTime.split(":").map(Number);
+    const endHours = (hours + 1).toString().padStart(2, "0");
+    const endTime = `${endHours}:${minutes.toString().padStart(2, "0")}`;
+
+    // 3. Create Booking
+    const newBooking = await Booking.create({
+      arenaId,
+      date,
+      startTime,
+      endTime,
+      totalPrice: totalPrice || 0,
+      customerName: customerName || "Walk-in Customer",
+      status: "confirmed",
+      userId: null // Manual bookings don't necessarily have a registered user
+    });
+
+    return res.status(201).json({ message: "Manual booking created", data: newBooking });
+  } catch (error) {
+    console.error("Create manager booking error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -47,6 +47,9 @@ import {
   updateManagerSlot,
   getManagerCustomers,
   getAllBookings,
+  updateManagerArena,
+  createManagerBooking,
+  deleteManagerBooking,
 } from "../controller/managerController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -127,10 +130,13 @@ router.patch("/managers/:id", authMiddleware, updateManagerStatus);
 
 // Manager Module Routes (Manager restricted)
 router.get("/manager/arena", authMiddleware, managerMiddleware, getManagerArena);
+router.put("/manager/arena", authMiddleware, managerMiddleware, updateManagerArena);
 router.get("/manager/bookings", authMiddleware, managerMiddleware, getManagerBookings);
 router.patch("/manager/bookings/:id", authMiddleware, managerMiddleware, updateManagerBooking);
 router.get("/manager/schedule", authMiddleware, managerMiddleware, getManagerSchedule);
 router.patch("/manager/schedule/:id", authMiddleware, managerMiddleware, updateManagerSlot);
+router.post("/manager/bookings", authMiddleware, managerMiddleware, createManagerBooking);
+router.delete("/manager/bookings/:id", authMiddleware, managerMiddleware, deleteManagerBooking);
 router.get("/manager/customers", authMiddleware, managerMiddleware, getManagerCustomers);
 
 export default router;

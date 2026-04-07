@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Search, Filter, Calendar, Clock, CheckCircle2, XCircle, MoreVertical, Loader2, User, UserCheck, AlertCircle } from "lucide-react";
-import api from "../../services/api";
+import { Search, Filter, Calendar, Clock, CheckCircle2, XCircle, MoreVertical, Loader2, User, UserCheck, AlertCircle, Trophy, Trash2 } from "lucide-react";
+import api, { deleteManagerBooking } from "../../services/api";
 
 export default function BookingManagement() {
   const [bookings, setBookings] = useState([]);
@@ -38,21 +38,33 @@ export default function BookingManagement() {
     }
   };
 
+  const handleDeleteBooking = async (id) => {
+     if (!window.confirm("Permanent delete? This will also remove any linked match data.")) return;
+     try {
+        await deleteManagerBooking(id);
+        fetchBookings();
+     } catch (err) {
+        console.error("Delete error:", err);
+        alert("Failed to delete booking.");
+     }
+  };
+
   const filteredBookings = bookings.filter(b => 
     b.user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    b.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     b.id.toString().includes(searchQuery)
   );
 
   return (
     <div className="space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-outfit-bold text-white tracking-tight">Booking Management</h1>
-          <p className="text-zinc-500 font-medium tracking-tight">Manage all reservations and confirm upcoming matches.</p>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-4xl font-outfit-bold text-white tracking-tight">Real-Time Bookings</h1>
+            <p className="text-zinc-500 font-medium tracking-tight">Monitor all instant reservations and upcoming matches.</p>
+          </div>
         </div>
-      </div>
-
-      <div className="bg-zinc-950 border border-zinc-900 rounded-[32px] overflow-hidden shadow-2xl">
+  
+        <div className="bg-zinc-950 border border-zinc-900 rounded-[32px] overflow-hidden shadow-2xl">
         {/* Filters */}
         <div className="px-8 py-6 border-b border-zinc-900 bg-zinc-900/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="relative w-full lg:w-96">
@@ -111,12 +123,17 @@ export default function BookingManagement() {
                   <tr key={booking.id} className="hover:bg-zinc-900/10 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-zinc-900 flex items-center justify-center border border-zinc-900 text-zinc-500">
-                           <User className="w-6 h-6" />
+                        <div className="h-12 w-12 rounded-2xl bg-zinc-900 border border-zinc-900 flex items-center justify-center text-zinc-500">
+                           {booking.matchId ? <Trophy className="w-6 h-6 text-amber-500" /> : <User className="w-6 h-6" />}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-white mb-0.5">{booking.user?.username}</p>
-                          <p className="text-xs text-zinc-600 font-medium tracking-tight">ID: #{booking.id}</p>
+                          <p className="text-sm font-bold text-white mb-0.5">{booking.user?.username || booking.customerName || "Walk-in Customer"}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter ${booking.matchId ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-500"}`}>
+                              {booking.matchId ? "Online Booking" : "Walk-in"}
+                            </span>
+                            <p className="text-[10px] text-zinc-700 font-bold tracking-tight">ID: #{booking.id}</p>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -136,37 +153,43 @@ export default function BookingManagement() {
                       <p className="text-sm font-bold text-white tracking-widest">रू {booking.totalPrice}</p>
                     </td>
                     <td className="px-8 py-6 text-center">
-                       <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-zinc-900/50 bg-zinc-900/30 text-xs font-bold uppercase tracking-widest
-                        ${booking.status === 'pending' ? 'text-amber-500' : ''}
-                        ${booking.status === 'confirmed' ? 'text-green-500' : ''}
-                        ${booking.status === 'completed' ? 'text-blue-500' : ''}
-                        ${booking.status === 'cancelled' ? 'text-red-500' : ''}
-                       `}>
-                          {booking.status === 'confirmed' && <UserCheck className="w-3.5 h-3.5" />}
-                          {booking.status === 'pending' && <Clock className="w-3.5 h-3.5" />}
-                          {booking.status}
+                       <div className="flex flex-col items-center gap-2">
+                         <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-zinc-900/50 bg-zinc-900/30 text-xs font-bold uppercase tracking-widest
+                          ${booking.status === 'pending' ? 'text-amber-500' : ''}
+                          ${booking.status === 'confirmed' ? 'text-green-500' : ''}
+                          ${booking.status === 'completed' ? 'text-blue-500' : ''}
+                          ${booking.status === 'cancelled' ? 'text-red-500' : ''}
+                         `}>
+                            {booking.status === 'confirmed' && <UserCheck className="w-3.5 h-3.5" />}
+                            {booking.status === 'pending' && <Clock className="w-3.5 h-3.5" />}
+                            {booking.status}
+                         </div>
+                         {booking.matchId && (
+                           <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                             <Trophy className="w-3 h-3 text-amber-500" />
+                             <span className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">Hosted Match</span>
+                           </div>
+                         )}
                        </div>
                     </td>
                     <td className="px-8 py-6 text-right pr-12">
                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          {booking.status === 'pending' && (
-                            <button 
-                              onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                              className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-green-500/10 hover:text-green-500 text-zinc-500 transition-all shadow-lg"
-                              title="Confirm Booking"
-                            >
-                              <CheckCircle2 className="w-5 h-5" />
-                            </button>
-                          )}
                           {(booking.status === 'pending' || booking.status === 'confirmed') && (
                             <button 
                               onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                              className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-zinc-500 transition-all shadow-lg"
+                              className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-amber-500/10 hover:text-amber-500 text-zinc-600 transition-all shadow-lg"
                               title="Cancel Booking"
                             >
-                              <XCircle className="w-5 h-5" />
+                               <XCircle className="w-5 h-5" />
                             </button>
                           )}
+                          <button 
+                            onClick={() => handleDeleteBooking(booking.id)}
+                            className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-zinc-600 transition-all shadow-lg"
+                            title="Permanent Delete"
+                          >
+                             <Trash2 className="w-5 h-5" />
+                          </button>
                        </div>
                     </td>
                   </tr>

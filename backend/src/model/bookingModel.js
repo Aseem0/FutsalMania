@@ -29,6 +29,10 @@ const createBookingModel = (sequelize) => {
         type: DataTypes.ENUM("pending", "confirmed", "completed", "cancelled"),
         defaultValue: "pending",
       },
+      customerName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       tableName: "bookings",

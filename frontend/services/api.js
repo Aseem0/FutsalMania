@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-const API_HOST = "192.168.101.4";
+const API_HOST = "100.64.240.161";
 const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({
@@ -25,16 +25,29 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     // If we get a 401/403, it means the session is definitely invalid
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
       console.warn("Session expired or invalid. Clearing tokens...");
-      await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
+      await AsyncStorage.multiRemove([
+        "userToken",
+        "username",
+        "userRole",
+        "hasCompletedOnboarding",
+      ]);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export const logoutUser = async () => {
-  await AsyncStorage.multiRemove(["userToken", "username", "userRole", "hasCompletedOnboarding"]);
+  await AsyncStorage.multiRemove([
+    "userToken",
+    "username",
+    "userRole",
+    "hasCompletedOnboarding",
+  ]);
   // Optional: Add any backend logout call here if exists
 };
 

@@ -79,7 +79,9 @@ export default function ManagerDashboard() {
            </div>
            <div>
               <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-1">Active Arena Status</p>
-              <h3 className="text-4xl font-outfit-bold text-white uppercase tracking-tighter">Live</h3>
+              <h3 className={`text-4xl font-outfit-bold uppercase tracking-tighter ${arena.status === 'active' ? 'text-green-500' : 'text-red-500'}`}>
+                {arena.status === 'active' ? 'Live' : 'Inactive'}
+              </h3>
            </div>
         </div>
 

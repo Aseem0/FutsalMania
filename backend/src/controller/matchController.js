@@ -1,11 +1,24 @@
 import { Sequelize } from "sequelize";
-import { Match, Arena, User } from "../model/index.js";
+import { Match, Arena, User, Booking } from "../model/index.js";
 
 export const createMatch = async (req, res) => {
   try {
     const { arenaId, date, time, format, maxPlayers, skillLevel, price } = req.body;
     const hostId = req.user.id;
 
+    // Check for existing bookings at this time and arena
+    const existingBooking = await Booking.findOne({
+      where: {
+        arenaId,
+        date,
+        startTime: time,
+        status: ["pending", "confirmed"], // Only block if active
+      }
+    });
+
+    if (existingBooking) {
+      return res.status(409).json({ message: "This slot is already booked. Please choose another time." });
+    }
 
     const newMatch = await Match.create({
       hostId,
@@ -21,6 +34,23 @@ export const createMatch = async (req, res) => {
     
     // Automatically add the host as the first player in the MatchPlayers table
     await newMatch.addPlayer(hostId);
+
+    // Automatically create a Booking
+    // Calculate endTime (assume 1 hour)
+    const [hours, minutes] = time.split(":").map(Number);
+    const endHours = (hours + 1).toString().padStart(2, "0");
+    const endTime = `${endHours}:${minutes.toString().padStart(2, "0")}`;
+
+    await Booking.create({
+       date,
+       startTime: time,
+       endTime: endTime,
+       totalPrice: price,
+       status: "confirmed", // AUTO-CONFIRM
+       arenaId,
+       userId: hostId,
+       matchId: newMatch.id
+    });
 
     res.status(201).json(newMatch);
   } catch (error) {

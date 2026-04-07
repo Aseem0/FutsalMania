@@ -101,5 +101,9 @@ RecruitmentApplication.belongsTo(User, { foreignKey: "userId", as: "applicant" }
 PlayerRecruitment.hasMany(RecruitmentApplication, { foreignKey: "recruitmentId", as: "applications" });
 RecruitmentApplication.belongsTo(PlayerRecruitment, { foreignKey: "recruitmentId", as: "recruitment" });
 
+// --- Match-Booking Association ---
+Match.hasOne(Booking, { foreignKey: "matchId", as: "booking" });
+Booking.belongsTo(Match, { foreignKey: "matchId", as: "match" });
+
 export { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament, Booking, Schedule };
 export default { sequelize, User, Arena, Match, Team, TeamMatch, PlayerRecruitment, RecruitmentApplication, Tournament, Booking, Schedule };
