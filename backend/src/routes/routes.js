@@ -9,7 +9,7 @@ import {
   adminCreateUserController,
   deleteUserController,
 } from "../controller/userController.js";
-import { getArenas, createArena, updateArena, deleteArena } from "../controller/arenaController.js";
+import { getArenas, createArena, updateArena, deleteArena, getArenaAvailability } from "../controller/arenaController.js";
 import {
   createMatch,
   getMatches,
@@ -51,6 +51,17 @@ import {
   createManagerBooking,
   deleteManagerBooking,
 } from "../controller/managerController.js";
+import {
+  createAnnouncement,
+  getAllAnnouncements,
+  deleteAnnouncement,
+} from "../controller/announcementController.js";
+import {
+  getUserNotifications,
+  getUnreadCount,
+  markAsRead,
+  markAllRead,
+} from "../controller/notificationController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const managerMiddleware = (req, res, next) => {
@@ -69,11 +80,20 @@ const adminMiddleware = (req, res, next) => {
   }
 };
 
+const adminOrManagerMiddleware = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'manager')) {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Admin or Manager role required." });
+  }
+};
+
 const router = Router();
 
 router.post("/register", registerController);
 router.post("/login", loginController);
 router.get("/arenas", getArenas);
+router.get("/arenas/:id/slots", getArenaAvailability);
 router.post("/arenas", authMiddleware, adminMiddleware, createArena);
 router.put("/arenas/:id", authMiddleware, adminMiddleware, updateArena);
 router.delete("/arenas/:id", authMiddleware, adminMiddleware, deleteArena);
@@ -138,5 +158,16 @@ router.patch("/manager/schedule/:id", authMiddleware, managerMiddleware, updateM
 router.post("/manager/bookings", authMiddleware, managerMiddleware, createManagerBooking);
 router.delete("/manager/bookings/:id", authMiddleware, managerMiddleware, deleteManagerBooking);
 router.get("/manager/customers", authMiddleware, managerMiddleware, getManagerCustomers);
+
+// Announcement Routes
+router.post("/announcements", authMiddleware, adminOrManagerMiddleware, createAnnouncement);
+router.get("/announcements", getAllAnnouncements);
+router.delete("/announcements/:id", authMiddleware, adminOrManagerMiddleware, deleteAnnouncement);
+
+// Notification Routes
+router.get("/notifications", authMiddleware, getUserNotifications);
+router.get("/notifications/unread-count", authMiddleware, getUnreadCount);
+router.patch("/notifications/read-all", authMiddleware, markAllRead);
+router.patch("/notifications/:id/read", authMiddleware, markAsRead);
 
 export default router;

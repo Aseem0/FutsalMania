@@ -1,4 +1,4 @@
-import { Arena } from "../model/index.js";
+import { Arena, Booking } from "../model/index.js";
 
 export const getArenas = async (req, res) => {
   try {
@@ -58,6 +58,40 @@ export const deleteArena = async (req, res) => {
     res.status(200).json({ message: "Arena deleted successfully" });
   } catch (error) {
     console.error("Error deleting arena:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getArenaAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required" });
+    }
+
+    const arena = await Arena.findByPk(id);
+    if (!arena) return res.status(404).json({ message: "Arena not found" });
+
+    const bookings = await Booking.findAll({
+      where: {
+        arenaId: id,
+        date,
+        status: ["pending", "confirmed"],
+      },
+      attributes: ["startTime"],
+    });
+
+    const bookedSlots = bookings.map((b) => b.startTime);
+
+    res.status(200).json({
+      arenaId: id,
+      date,
+      bookedSlots,
+    });
+  } catch (error) {
+    console.error("Error fetching arena availability:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

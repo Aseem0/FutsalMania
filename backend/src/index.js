@@ -12,6 +12,7 @@ import cors from "cors";
 import { dbConnection } from "./db/dbconnection.js";
 import { seedArenas, seedAdmin } from "./db/seeders.js";
 import router from "./routes/routes.js";
+import startReminderJob from "./jobs/reminderJob.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ const startServer = async () => {
   await dbConnection();
   await seedArenas();
   await seedAdmin();
+  startReminderJob();
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);

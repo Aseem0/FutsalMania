@@ -3,6 +3,16 @@ import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
+// Converts stored "06:00" → "6:00 AM" for display
+const formatTimeDisplay = (value) => {
+  if (!value) return 'Not set';
+  if (value.includes('AM') || value.includes('PM')) return value; // already formatted
+  const [h, m] = value.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const displayHour = h % 12 || 12;
+  return `${displayHour}:${String(m).padStart(2, '0')} ${period}`;
+};
+
 /**
  * ReviewStep Component
  * Provides a final summary of all selected game details before posting.
@@ -183,7 +193,7 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
             </View>
             <View>
               <Text className="text-white/40 text-[9px] font-inter-bold uppercase">Time</Text>
-              <Text className="text-white font-inter-bold">{details.time || 'Not set'}</Text>
+              <Text className="text-white font-inter-bold">{formatTimeDisplay(details.time)}</Text>
             </View>
           </View>
         </View>

@@ -14,9 +14,11 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { fetchMyMatches, fetchMyApplications, fetchReceivedApplications } from "../../services/api";
 import { formatDate } from "../../utils/dateUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNotifications } from "../../context/NotificationContext";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { unreadCount } = useNotifications();
   const [matches, setMatches] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [receivedApplications, setReceivedApplications] = useState([]);
@@ -78,16 +80,27 @@ export default function HomeScreen() {
             </Text>
             
             <View className="flex-row items-center gap-4">
-              <TouchableOpacity className="relative">
-                <MaterialCommunityIcons name="bell-outline" size={24} color="#ffffff" />
-                <View className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#FFB300] border border-black" />
-              </TouchableOpacity>
-              
               <TouchableOpacity 
-                onPress={() => router.push("/profile")}
-                className="h-8 w-8 rounded-full items-center justify-center border border-[#1F1F1F] bg-[#121212]"
+                onPress={() => router.push("/announcements")}
+                className="relative"
               >
-                <MaterialCommunityIcons name="account-outline" size={20} color="#ffffff" />
+                <MaterialCommunityIcons name="bullhorn-outline" size={24} color="#ffffff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="relative"
+                onPress={() => router.push("/notifications")}
+              >
+                <MaterialCommunityIcons name="bell-outline" size={24} color="#ffffff" />
+                {unreadCount > 0 && (
+                  <View
+                    className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-[#FFB300] border border-black items-center justify-center px-0.5"
+                  >
+                    <Text className="text-black text-[9px] font-inter-black leading-none">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
           </View>

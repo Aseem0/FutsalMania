@@ -14,7 +14,8 @@ import {
   Calendar,
   Clock,
   Briefcase,
-  Users as CustomersIcon
+  Users as CustomersIcon,
+  Megaphone
 } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
@@ -38,12 +39,14 @@ const Sidebar = ({ isOpen, toggle }) => {
     { name: "Matches", path: "/matches", icon: Clock },
     { name: "Tournaments", path: "/tournaments", icon: Trophy },
     { name: "Bookings", path: "/bookings", icon: CalendarCheck },
+    { name: "Announcements", path: "/announcements", icon: Megaphone },
   ] : [
     { name: "Dashboard", path: "/manager/dashboard", icon: LayoutDashboard },
     { name: "Arena Overview", path: "/manager/arena", icon: MapPin },
     { name: "Bookings", path: "/manager/bookings", icon: Calendar },
     { name: "Schedule", path: "/manager/schedule", icon: Clock },
     { name: "Customers", path: "/manager/customers", icon: CustomersIcon },
+    { name: "Announcements", path: "/manager/announcements", icon: Megaphone },
   ];
 
   const handleLogout = () => {

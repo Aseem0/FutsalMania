@@ -124,6 +124,7 @@ export default function HostGameScreen() {
           )}
           {currentStep === 2 && (
             <DetailsStep 
+              arenaId={gameData.arena?.id}
               details={gameData.details}
               onUpdate={(details) => setGameData({ ...gameData, details: { ...gameData.details, ...details } })}
             />

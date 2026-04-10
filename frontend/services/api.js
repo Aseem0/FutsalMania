@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-const API_HOST = "100.64.240.161";
+const API_HOST = "100.64.233.173";
 const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({
@@ -61,6 +61,10 @@ export const login = (userData) => {
 
 export const fetchArenas = () => {
   return api.get("/arenas");
+};
+
+export const fetchArenaSlots = (arenaId, date) => {
+  return api.get(`/arenas/${arenaId}/slots`, { params: { date } });
 };
 
 export const createMatch = (matchData) => {
@@ -169,4 +173,15 @@ export const fetchTournamentById = (id) => {
   return api.get(`/tournaments/${id}`);
 };
 
+export const fetchAnnouncements = () => {
+  return api.get("/announcements");
+};
+
+// Notifications
+export const fetchNotifications = () => api.get("/notifications");
+export const fetchUnreadCount = () => api.get("/notifications/unread-count");
+export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.patch("/notifications/read-all");
+
 export default api;
+

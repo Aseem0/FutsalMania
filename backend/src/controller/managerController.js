@@ -1,6 +1,7 @@
 import { User, Arena, Booking, Schedule, Match } from "../model/index.js";
 import bcryptjs from "bcryptjs";
 import { Op } from "sequelize";
+import { createNotification } from "./notificationHelper.js";
 
 // --- Admin Operations for Managers ---
 
@@ -257,6 +258,30 @@ export const updateManagerBooking = async (req, res) => {
              // Match remains open or full as it was, but we could add logic here if needed
           }
        }
+    }
+
+    // --- Notify the booking user ---
+    if (booking.userId) {
+      const arena = await Arena.findByPk(arenaId, { attributes: ["name"] });
+      const arenaName = arena?.name || "the arena";
+
+      if (status === "confirmed" && oldStatus !== "confirmed") {
+        createNotification({
+          userId: booking.userId,
+          type: "booking_confirmed",
+          title: "Booking Confirmed ✅",
+          body: `Your booking at ${arenaName} on ${booking.date} (${booking.startTime}–${booking.endTime}) has been confirmed.`,
+          relatedId: booking.id,
+        });
+      } else if (status === "cancelled" && oldStatus !== "cancelled") {
+        createNotification({
+          userId: booking.userId,
+          type: "booking_cancelled",
+          title: "Booking Cancelled",
+          body: `Your booking at ${arenaName} on ${booking.date} (${booking.startTime}) has been cancelled by the manager.`,
+          relatedId: booking.id,
+        });
+      }
     }
 
     return res.status(200).json({ message: "Booking updated successfully", data: booking });

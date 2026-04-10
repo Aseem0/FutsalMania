@@ -16,6 +16,7 @@ import ArenaOverview from './pages/manager/ArenaOverview';
 import BookingManagement from './pages/manager/BookingManagement';
 import ScheduleManagement from './pages/manager/ScheduleManagement';
 import CustomerManagement from './pages/manager/CustomerManagement';
+import Announcements from './pages/Announcements';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem('adminToken');
@@ -63,6 +64,7 @@ function App() {
         <Route path="bookings" element={<Bookings />} />
         <Route path="managers" element={<ManagerList />} />
         <Route path="managers/create" element={<CreateManager />} />
+        <Route path="announcements" element={<Announcements />} />
       </Route>
 
       {/* Manager Specific Routes */}
@@ -80,6 +82,7 @@ function App() {
         <Route path="bookings" element={<BookingManagement />} />
         <Route path="schedule" element={<ScheduleManagement />} />
         <Route path="customers" element={<CustomerManagement />} />
+        <Route path="announcements" element={<Announcements />} />
       </Route>
       <Route path="*" element={<RoleBasedRedirect />} />
     </Routes>

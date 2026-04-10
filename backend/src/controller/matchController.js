@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import { Match, Arena, User, Booking } from "../model/index.js";
+import { createNotification } from "./notificationHelper.js";
 
 export const createMatch = async (req, res) => {
   try {
@@ -52,7 +53,18 @@ export const createMatch = async (req, res) => {
        matchId: newMatch.id
     });
 
+    // Notify the host that their game was created successfully
+    const arena = await Arena.findByPk(arenaId, { attributes: ["name"] });
+    createNotification({
+      userId: hostId,
+      type: "match_join",
+      title: "🏟️ Game Hosted Successfully!",
+      body: `Your ${format} match at ${arena?.name || "the arena"} on ${date} at ${time} is now live. Share it so players can join!`,
+      relatedId: newMatch.id,
+    });
+
     res.status(201).json(newMatch);
+
   } catch (error) {
     console.error("Error creating match:", error);
     res.status(500).json({ message: "Failed to create match" });
@@ -161,8 +173,33 @@ export const joinMatch = async (req, res) => {
 
     // Refresh match data to check if it's now full
     const updatedMatch = await Match.findByPk(id);
-    if (updatedMatch.currentPlayers >= updatedMatch.maxPlayers) {
+    const isNowFull = updatedMatch.currentPlayers >= updatedMatch.maxPlayers;
+    if (isNowFull) {
       await updatedMatch.update({ status: "full" });
+    }
+
+    // --- Notifications ---
+    // Notify host: player joined
+    if (match.hostId !== userId) {
+      const joiner = await User.findByPk(userId, { attributes: ["username"] });
+      createNotification({
+        userId: match.hostId,
+        type: "match_join",
+        title: "Player Joined Your Match",
+        body: `${joiner?.username || "A player"} joined your match on ${match.date} at ${match.time}.`,
+        relatedId: match.id,
+      });
+
+      // Notify host: match is now full
+      if (isNowFull) {
+        createNotification({
+          userId: match.hostId,
+          type: "match_full",
+          title: "Your Match is Full!",
+          body: `Your match on ${match.date} at ${match.time} has reached max capacity.`,
+          relatedId: match.id,
+        });
+      }
     }
 
     res.status(200).json({ message: "Successfully joined the match" });

@@ -1,4 +1,5 @@
 import { RecruitmentApplication, PlayerRecruitment, User, Team } from "../model/index.js";
+import { createNotification } from "./notificationHelper.js";
 
 export const applyToRecruitment = async (req, res) => {
   try {
@@ -28,6 +29,16 @@ export const applyToRecruitment = async (req, res) => {
     const application = await RecruitmentApplication.create({
       userId,
       recruitmentId,
+    });
+
+    // Notify the recruitment host
+    const applicant = await User.findByPk(userId, { attributes: ["username"] });
+    createNotification({
+      userId: recruitment.hostId,
+      type: "recruitment_apply",
+      title: "New Player Application",
+      body: `${applicant?.username || "A player"} applied for the "${recruitment.role}" position.`,
+      relatedId: recruitment.id,
     });
 
     res.status(201).json(application);

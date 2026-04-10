@@ -46,6 +46,10 @@ const createMatchModel = (sequelize) => {
         type: DataTypes.ENUM("open", "full", "completed", "cancelled"),
         defaultValue: "open",
       },
+      reminderSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       tableName: "matches",
