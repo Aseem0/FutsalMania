@@ -46,6 +46,11 @@ const createPlayerRecruitmentModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      contactNumber: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "Not Provided",
+      },
     },
     {
       tableName: "player_recruitments",

@@ -47,9 +47,26 @@ const createTeamMatchModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      guestId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      guestCustomTeamName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      guestContactNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       arenaId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      contactNumber: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "Not Provided",
       },
     },
     {

@@ -109,25 +109,16 @@ export default function AnnouncementsScreen() {
                 </Text>
 
                 {/* Footer */}
-                <View className="pt-4 border-t border-white/5 flex-row items-center justify-between">
-                  <View className="flex-row items-center">
-                    <View className="h-6 w-6 rounded-full bg-amber-400/10 items-center justify-center mr-2">
-                      <MaterialCommunityIcons name="account" size={14} color="#FFB300" />
-                    </View>
-                    <Text className="text-white/60 text-xs font-inter-bold">
-                      {item.author?.username}
-                    </Text>
-                  </View>
-                  
-                  {item.arena && (
+                {item.arena && (
+                  <View className="pt-4 border-t border-white/5 flex-row items-center justify-end">
                     <View className="flex-row items-center">
                       <MaterialCommunityIcons name="map-marker" size={12} color="#A1A1AA" className="mr-1" />
                       <Text className="text-[#A1A1AA] text-xs font-inter-medium">
                         {item.arena?.name}
                       </Text>
                     </View>
-                  )}
-                </View>
+                  </View>
+                )}
               </View>
             ))
           )}

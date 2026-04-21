@@ -6,7 +6,7 @@ export const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: "Authentication required" });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(" ")[1]?.trim();
   const JWT_SECRET = process.env.JWT_SECRET;
   
   if (!JWT_SECRET) {
@@ -15,12 +15,15 @@ export const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token.trim(), JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
-    console.warn(`[AuthMiddleware] ⚠️  Unauthorized: ${error.message} (Path: ${req.path})`);
-    return res.status(403).json({ 
+    console.error(`[AuthMiddleware] ❌ Token Validation Failed: ${error.message}`);
+    console.error(`[AuthMiddleware] Error Name: ${error.name}`);
+    console.error(`[AuthMiddleware] Attempted Path: ${req.path}`);
+    
+    return res.status(401).json({ 
       message: "Authentication failed",
       error: error.message,
       code: error.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "INVALID_TOKEN"

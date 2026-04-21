@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-const API_HOST = "100.64.233.173";
+const API_HOST = "192.168.101.7";
 const BASE_URL = `http://${API_HOST}:5000/api`;
 
 const api = axios.create({
@@ -29,7 +29,8 @@ api.interceptors.response.use(
       error.response &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
-      console.warn("Session expired or invalid. Clearing tokens...");
+      // const failedUrl = error.config?.url;
+      // console.warn(`[API] Session cleared due to ${error.response.status} on: ${failedUrl}`);
       await AsyncStorage.multiRemove([
         "userToken",
         "username",
@@ -57,6 +58,22 @@ export const register = (userData) => {
 
 export const login = (userData) => {
   return api.post("/login", userData);
+};
+
+export const verifyOtp = (email, otp) => {
+  return api.post("/verify-otp", { email, otp });
+};
+
+export const resendOtp = (email) => {
+  return api.post("/resend-otp", { email });
+};
+
+export const forgotPassword = (email) => {
+  return api.post("/forgot-password", { email });
+};
+
+export const resetPassword = (data) => {
+  return api.post("/reset-password", data);
 };
 
 export const fetchArenas = () => {
@@ -126,6 +143,10 @@ export const fetchTeamMatches = () => {
   return api.get("/team-matches");
 };
 
+export const fetchMyTeamMatches = () => {
+  return api.get("/team-matches/my");
+};
+
 export const hostTeamMatch = (matchData) => {
   return api.post("/team-matches", matchData);
 };
@@ -134,8 +155,12 @@ export const fetchTeamMatchById = (id) => {
   return api.get(`/team-matches/${id}`);
 };
 
-export const joinTeamMatchAsOpponent = (matchId, teamId) => {
-  return api.post(`/team-matches/${matchId}/join`, { teamId });
+export const joinTeamMatchAsOpponent = (matchId, data) => {
+  return api.post(`/team-matches/${matchId}/join`, data);
+};
+
+export const deleteTeamMatch = (id) => {
+  return api.delete(`/team-matches/${id}`);
 };
 
 // Player Recruitment
@@ -145,6 +170,10 @@ export const fetchRecruitments = (params) => {
 
 export const createRecruitment = (recruitmentData) => {
   return api.post("/recruitments", recruitmentData);
+};
+
+export const deleteRecruitment = (id) => {
+  return api.delete(`/recruitments/${id}`);
 };
 
 // Recruitment Applications
@@ -160,6 +189,14 @@ export const fetchReceivedApplications = () => {
   return api.get("/recruitments/applications/received");
 };
 
+export const updateApplicationStatus = (id, status) => {
+  return api.patch(`/recruitments/applications/${id}`, { status });
+};
+
+export const deleteApplication = (id) => {
+  return api.delete(`/recruitments/applications/${id}`);
+};
+
 // Tournaments
 export const fetchTournaments = () => {
   return api.get("/tournaments");
@@ -173,6 +210,10 @@ export const fetchTournamentById = (id) => {
   return api.get(`/tournaments/${id}`);
 };
 
+export const registerTournament = (id, data) => {
+  return api.post(`/tournaments/${id}/register`, data);
+};
+
 export const fetchAnnouncements = () => {
   return api.get("/announcements");
 };
@@ -180,8 +221,11 @@ export const fetchAnnouncements = () => {
 // Notifications
 export const fetchNotifications = () => api.get("/notifications");
 export const fetchUnreadCount = () => api.get("/notifications/unread-count");
-export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
-export const markAllNotificationsRead = () => api.patch("/notifications/read-all");
+export const markNotificationRead = (id) =>
+  api.patch(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () =>
+  api.patch("/notifications/read-all");
+export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
+export const clearAllNotifications = () => api.post("/notifications/clear-all");
 
 export default api;
-

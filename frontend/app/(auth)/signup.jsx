@@ -6,7 +6,6 @@ import {
   StatusBar,
   Pressable,
   Keyboard,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -20,15 +19,17 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSignUp = async () => {
+    setErrorMessage("");
     if (!username || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setErrorMessage("Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      setErrorMessage("Passwords do not match");
       return;
     }
 
@@ -37,15 +38,25 @@ export default function SignUpScreen() {
       const response = await register({ username, email, password });
 
       if (response.status === 201) {
-        router.replace("/(auth)/login");
+        // Pass the email to the OTP screen
+        router.push({
+          pathname: "/(auth)/otp",
+          params: { email },
+        });
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
-      Alert.alert("Signup Failed", errorMessage);
+      const msg =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInputEmoji = (setter) => (val) => {
+    setErrorMessage("");
+    setter(val);
   };
 
   return (
@@ -66,30 +77,43 @@ export default function SignUpScreen() {
 
           {/* Form */}
           <View className="px-8 pb-6 mt-5">
+            {errorMessage ? (
+              <View className="bg-red-500/10 border border-red-500/50 p-4 rounded-lg mb-6 flex-row items-center">
+                <MaterialCommunityIcons
+                  name="alert-circle"
+                  size={20}
+                  color="#ef4444"
+                />
+                <Text className="text-red-500 text-sm font-inter-medium ml-2 flex-1">
+                  {errorMessage}
+                </Text>
+              </View>
+            ) : null}
+
             <AuthInput
               label="Username"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={handleInputEmoji(setUsername)}
             />
 
             <AuthInput
               label="Email Address"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={handleInputEmoji(setEmail)}
               keyboardType="email-address"
             />
 
             <AuthInput
               label="Password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={handleInputEmoji(setPassword)}
               isPassword
             />
 
             <AuthInput
               label="Confirm Password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={handleInputEmoji(setConfirmPassword)}
               isPassword
             />
 
@@ -109,7 +133,9 @@ export default function SignUpScreen() {
                 <Text className="text-sm font-inter opacity-40 text-white mb-1">
                   Already have an account?
                 </Text>
-                <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(auth)/login")}
+                >
                   <Text className="text-sm font-inter-medium text-amber-400 border-b border-amber-400 pb-0.5 tracking-wide">
                     Login
                   </Text>

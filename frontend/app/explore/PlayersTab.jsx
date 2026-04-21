@@ -10,11 +10,13 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { fetchRecruitments, applyToRecruitment } from "../../services/api";
+import { fetchRecruitments, applyToRecruitment, deleteRecruitment, fetchUserProfile } from "../../services/api";
+import ConfirmModal from "../../components/ConfirmModal";
+import SuccessModal from "../../components/SuccessModal";
 
-const PlayerCard = ({ recruitment, onApply }) => {
+const PlayerCard = ({ recruitment, onApply, onDelete, isHost }) => {
   const [applying, setApplying] = useState(false);
-  const { id, host, team, role, level, date, time, playersNeeded, description } = recruitment;
+  const { id, host, team, role, level, date, time, playersNeeded, description, contactNumber } = recruitment;
   
   // Format initials from username
   const initials = host?.username?.substring(0, 2).toUpperCase() || "??";
@@ -26,58 +28,74 @@ const PlayerCard = ({ recruitment, onApply }) => {
   });
 
   return (
-    <View className="bg-[#121212] border border-[#1f1f1f] rounded-2xl p-5 mb-4 shadow-sm">
-      {/* Top Section: Avatar & Host Info */}
-      <View className="flex-row justify-between items-start mb-3">
-        <View className="flex-row items-center">
-          <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${team?.logo ? 'bg-[#064e3b]' : 'bg-[#1e1b4b]'}`}>
-            {team?.logo ? (
-              <MaterialCommunityIcons name="shield-check" size={20} color="#10b981" />
-            ) : (
-              <Text className="text-white text-xs font-black">{initials}</Text>
+    <View className="bg-[#121212] border border-[#1f1f1f] rounded-3xl p-5 mb-6 justify-between shadow-sm">
+      <View>
+        <View className="flex-row justify-between items-start mb-2">
+          <View className="flex-row items-center">
+            <View className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${team?.logo ? 'bg-[#064e3b]' : 'bg-[#1e1b4b]'}`}>
+              {team?.logo ? (
+                <MaterialCommunityIcons name="shield-check" size={16} color="#10b981" />
+              ) : (
+                <Text className="text-white text-[10px] font-black">{initials}</Text>
+              )}
+            </View>
+            <View>
+              <Text className="text-white text-xs font-bold tracking-tight">{host?.username}</Text>
+              <Text className="text-[#A1A1AA] text-[8px] font-bold uppercase tracking-wider">
+                {team?.name || "Independent"}
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <View className="bg-amber-400/10 px-2 py-0.5 rounded-lg border border-amber-400/20">
+              <Text className="text-amber-400 text-[8px] font-black uppercase">{playersNeeded} needed</Text>
+            </View>
+            {isHost && (
+              <TouchableOpacity 
+                onPress={() => onDelete(id)}
+                className="w-8 h-8 rounded-full bg-red-500/10 items-center justify-center border border-red-500/20"
+              >
+                <MaterialCommunityIcons name="trash-can-outline" size={16} color="#ef4444" />
+              </TouchableOpacity>
             )}
           </View>
-          <View>
-            <Text className="text-white text-sm font-bold tracking-tight">{host?.username}</Text>
-            <Text className="text-[#A1A1AA] text-[9px] font-bold uppercase tracking-wider">
-              {team?.name || "Independent"}
+        </View>
+
+        <Text className="text-white text-lg font-black uppercase mb-1 tracking-tighter">
+          {role} Needed
+        </Text>
+
+        {description ? (
+          <Text className="text-[#A1A1AA] text-[10px] mb-2 leading-3" numberOfLines={1}>
+            {description}
+          </Text>
+        ) : null}
+
+        <View className="flex-row items-center gap-2 flex-wrap">
+          <View className="flex-row items-center bg-[#1a1a1a] px-2 py-1 rounded-xl border border-white/5">
+            <Feather name="bar-chart-2" size={10} color="#fbbf24" />
+            <Text className="text-[#A1A1AA] text-[9px] font-bold ml-1.5 uppercase tracking-wide">
+              {level}
             </Text>
           </View>
-        </View>
-        <View className="bg-amber-400/10 px-2 py-1 rounded-lg border border-amber-400/20">
-          <Text className="text-amber-400 text-[9px] font-black uppercase">{playersNeeded} needed</Text>
-        </View>
-      </View>
-
-      {/* Role Title */}
-      <Text className="text-white text-lg font-black uppercase mb-2 tracking-tighter">
-        {role} Needed
-      </Text>
-
-      {description ? (
-        <Text className="text-[#A1A1AA] text-xs mb-3 leading-4" numberOfLines={2}>
-          {description}
-        </Text>
-      ) : null}
-
-      {/* Info Badges */}
-      <View className="flex-row items-center mb-5 gap-3">
-        <View className="flex-row items-center bg-[#1a1a1a] px-3 py-1.5 rounded-xl border border-white/5">
-          <Feather name="bar-chart-2" size={12} color="#fbbf24" />
-          <Text className="text-[#A1A1AA] text-[10px] font-bold ml-1.5 uppercase tracking-wide">
-            {level}
-          </Text>
-        </View>
-        <View className="flex-row items-center bg-[#1a1a1a] px-3 py-1.5 rounded-xl border border-white/5">
-          <Feather name="clock" size={12} color="#666" />
-          <Text className="text-[#A1A1AA] text-[10px] font-bold ml-1.5 uppercase tracking-wide">
-            {formattedDate}, {time}
-          </Text>
+          <View className="flex-row items-center bg-[#1a1a1a] px-2 py-1 rounded-xl border border-white/5">
+            <Feather name="clock" size={10} color="#666" />
+            <Text className="text-[#A1A1AA] text-[9px] font-bold ml-1.5 uppercase tracking-wide">
+              {formattedDate}, {time}
+            </Text>
+          </View>
+          {contactNumber && contactNumber !== "Not Provided" && (
+            <View className="flex-row items-center bg-[#1a1a1a] px-2 py-1 rounded-xl border border-white/5">
+              <Feather name="phone" size={10} color="#fbbf24" />
+              <Text className="text-[#A1A1AA] text-[9px] font-bold ml-1.5 uppercase tracking-wide">
+                {contactNumber}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
-      {/* Action Buttons */}
-      <View className="flex-row">
+      <View className="flex-row mt-2">
         <TouchableOpacity 
           disabled={applying}
           onPress={async () => {
@@ -85,12 +103,12 @@ const PlayerCard = ({ recruitment, onApply }) => {
             await onApply(id);
             setApplying(false);
           }}
-          className={`flex-1 ${applying ? 'bg-amber-400/50' : 'bg-amber-400'} h-11 rounded-xl items-center justify-center active:bg-amber-500`}
+          className={`flex-1 ${applying ? 'bg-amber-400/50' : 'bg-amber-400'} h-9 rounded-xl items-center justify-center active:bg-amber-500`}
         >
           {applying ? (
             <ActivityIndicator size="small" color="black" />
           ) : (
-            <Text className="text-black font-black uppercase text-[10px] tracking-widest">Apply Now</Text>
+            <Text className="text-black font-black uppercase text-[9px] tracking-widest">Apply Now</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -101,11 +119,12 @@ const PlayerCard = ({ recruitment, onApply }) => {
 const FilterChip = ({ label, selected, onSelect }) => (
   <TouchableOpacity
     onPress={() => onSelect(label)}
-    className={`px-4 py-2 rounded-xl border mr-2 ${
+    activeOpacity={0.7}
+    className={`px-3 py-1.5 rounded-lg border mr-1.5 ${
       selected ? "bg-amber-400 border-amber-400" : "bg-[#111] border-white/5"
     }`}
   >
-    <Text className={`text-[10px] font-black uppercase ${selected ? "text-black" : "text-white/40"}`}>
+    <Text className={`text-[9px] font-black uppercase tracking-tight ${selected ? "text-black" : "text-white/40"}`}>
       {label}
     </Text>
   </TouchableOpacity>
@@ -114,6 +133,7 @@ const FilterChip = ({ label, selected, onSelect }) => (
 const PlayersTab = () => {
   const router = useRouter();
   const [recruitments, setRecruitments] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
@@ -121,26 +141,34 @@ const PlayersTab = () => {
     level: null,
   });
 
+  const [confirmDelete, setConfirmDelete] = useState({ visible: false, id: null });
+  const [showSuccess, setShowSuccess] = useState({ visible: false, message: "", title: "Success", type: "success" });
+
   const roles = ["Attacker", "Midfielder", "Defender", "Goalkeeper"];
   const levels = ["Casual", "Intermediate", "Competitive", "Pro"];
 
   const loadRecruitments = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
-      
+
       const params = {};
       if (filters.role) params.role = filters.role;
       if (filters.level) params.level = filters.level;
+      
+      const [recruitmentRes, userRes] = await Promise.all([
+        fetchRecruitments(params),
+        currentUser ? Promise.resolve({ data: currentUser }) : fetchUserProfile(),
+      ]);
 
-      const response = await fetchRecruitments(params);
-      setRecruitments(response.data);
+      setRecruitments(recruitmentRes.data);
+      setCurrentUser(userRes.data);
     } catch (error) {
       console.error("Error fetching recruitments:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filters]);
+  }, [filters, currentUser]);
 
   useEffect(() => {
     loadRecruitments();
@@ -161,48 +189,101 @@ const PlayersTab = () => {
   const handleApply = async (recruitmentId) => {
     try {
       await applyToRecruitment(recruitmentId);
-      Alert.alert("Success", "Application sent successfully!");
+      setShowSuccess({ 
+        visible: true, 
+        title: "Application Sent!", 
+        message: "Your application has been successfully submitted.",
+        type: "success"
+      });
     } catch (error) {
       console.error("Error applying:", error);
-      const message = error.response?.data?.message || "Failed to send application";
-      Alert.alert("Error", message);
+      
+      if (error.response?.status === 400 && error.response?.data?.message?.toLowerCase().includes("already applied")) {
+        setShowSuccess({ 
+          visible: true, 
+          title: "Already Applied", 
+          message: "You have already sent an application for this recruitment post.",
+          type: "info"
+        });
+      } else {
+        const message = error.response?.data?.message || "Failed to send application";
+        Alert.alert("Error", message);
+      }
     }
+  };
+
+  const proceedDelete = async () => {
+    try {
+      setLoading(true);
+      await deleteRecruitment(confirmDelete.id);
+      setConfirmDelete({ visible: false, id: null });
+      setShowSuccess({ visible: true, message: "Requirement removed successfully." });
+      loadRecruitments(false);
+    } catch (error) {
+      console.error("Error deleting recruitment:", error);
+      Alert.alert("Error", "Failed to delete recruitment post.");
+      setConfirmDelete({ visible: false, id: null });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRequest = (id) => {
+    setConfirmDelete({ visible: true, id });
   };
 
   return (
     <>
       <View className="flex-1">
         {/* Filter Section */}
-        <View className="px-6 py-4 border-b border-white/5 bg-black">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
-            <FilterChip 
-              label="All Roles" 
-              selected={!filters.role} 
-              onSelect={() => toggleFilter('role', null)} 
-            />
-            {roles.map(role => (
-              <FilterChip 
-                key={role}
-                label={role}
-                selected={filters.role === role}
-                onSelect={(val) => toggleFilter('role', val)}
-              />
-            ))}
-          </ScrollView>
+        <View className="px-6 py-5 border-b border-white/5 bg-black">
+          <View className="flex-row items-center justify-between mb-5">
+            <View>
+              <Text className="text-[10px] font-black uppercase text-amber-400 tracking-[3px] mb-1">Players Hub</Text>
+              <Text className="text-xl font-black text-white uppercase tracking-tight">Recruitments</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={() => router.push("/players-recruit/post-need")}
+              activeOpacity={0.8}
+              className="flex-row items-center bg-amber-400 px-4 py-2.5 rounded-2xl shadow-lg"
+            >
+              <MaterialIcons name="add" size={16} color="black" />
+              <Text className="text-black font-black uppercase text-[10px] tracking-widest ml-1">Post Need</Text>
+            </TouchableOpacity>
+          </View>
+
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <FilterChip 
-              label="All Levels" 
-              selected={!filters.level} 
-              onSelect={() => toggleFilter('level', null)} 
-            />
-            {levels.map(level => (
+            <View className="flex-row items-center gap-2">
               <FilterChip 
-                key={level}
-                label={level}
-                selected={filters.level === level}
-                onSelect={(val) => toggleFilter('level', val)}
+                label="All Roles" 
+                selected={!filters.role} 
+                onSelect={() => toggleFilter('role', null)} 
               />
-            ))}
+              {roles.map(role => (
+                <FilterChip 
+                  key={`role-${role}`}
+                  label={role}
+                  selected={filters.role === role}
+                  onSelect={(val) => toggleFilter('role', val)}
+                />
+              ))}
+              
+              <View className="w-[1px] h-4 bg-white/10 mx-1" />
+              
+              <FilterChip 
+                label="All Levels" 
+                selected={!filters.level} 
+                onSelect={() => toggleFilter('level', null)} 
+              />
+              {levels.map(level => (
+                <FilterChip 
+                  key={`level-${level}`}
+                  label={level}
+                  selected={filters.level === level}
+                  onSelect={(val) => toggleFilter('level', val)}
+                />
+              ))}
+            </View>
           </ScrollView>
         </View>
 
@@ -213,12 +294,18 @@ const PlayersTab = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fbbf24" />
           }
         >
-          <View className="pt-6 pb-32">
+          <View className="pt-6 pb-44">
             {loading ? (
               <ActivityIndicator color="#fbbf24" size="large" className="mt-10" />
             ) : recruitments.length > 0 ? (
               recruitments.map(item => (
-                <PlayerCard key={item.id} recruitment={item} onApply={handleApply} />
+                <PlayerCard 
+                  key={item.id} 
+                  recruitment={item} 
+                  onApply={handleApply}
+                  onDelete={handleDeleteRequest}
+                  isHost={currentUser?.id === item.hostId}
+                />
               ))
             ) : (
               <View className="items-center justify-center mt-20">
@@ -230,26 +317,24 @@ const PlayersTab = () => {
         </ScrollView>
       </View>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity 
-        onPress={() => router.push("/players-recruit/post-need")}
-        style={{
-          position: 'absolute',
-          bottom: 120,
-          right: 24,
-          backgroundColor: '#fbbf24',
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingVertical: 14,
-          borderRadius: 30,
-          boxShadow: '0 10px 20px rgba(251, 191, 36, 0.3)',
-          elevation: 10,
-        }}
-      >
-        <MaterialIcons name="add" size={24} color="black" />
-        <Text className="text-black font-black uppercase tracking-widest ml-2">Post Need</Text>
-      </TouchableOpacity>
+      <ConfirmModal
+        visible={confirmDelete.visible}
+        title="Remove Requirement?"
+        message="This will permanently delete this player recruitment post. This action cannot be undone."
+        confirmText="DELETE"
+        confirmDestructive={true}
+        onCancel={() => setConfirmDelete({ visible: false, id: null })}
+        onConfirm={proceedDelete}
+        loading={loading}
+      />
+
+      <SuccessModal
+        visible={showSuccess.visible}
+        title={showSuccess.title}
+        message={showSuccess.message}
+        type={showSuccess.type}
+        onClose={() => setShowSuccess({ ...showSuccess, visible: false })}
+      />
     </>
   );
 };

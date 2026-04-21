@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Search, Filter, Calendar, Clock, CheckCircle2, XCircle, MoreVertical, Loader2, User, UserCheck, AlertCircle, Trophy, Trash2 } from "lucide-react";
-import api, { deleteManagerBooking } from "../../services/api";
+import api, { deleteManagerBooking, updateManagerBooking } from "../../services/api";
 
 export default function BookingManagement() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/manager/bookings", { params: { status: filter !== "all" ? filter : undefined } });
+      const response = await api.get("/manager/bookings");
       setBookings(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error("Error fetching bookings:", err);
@@ -24,16 +23,14 @@ export default function BookingManagement() {
 
   useEffect(() => {
     fetchBookings();
-  }, [filter]);
+  }, []);
 
-  const handleUpdateStatus = async (id, status) => {
+  const handleStatusUpdate = async (id, status) => {
     try {
-      await api.patch(`/manager/bookings/${id}`, { status });
-      setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
-      // Re-fetch to be safe on filters
+      await updateManagerBooking(id, status);
       fetchBookings();
     } catch (err) {
-      console.error("Error updating booking status:", err);
+      console.error("Update status error:", err);
       alert("Failed to update status.");
     }
   };
@@ -77,17 +74,6 @@ export default function BookingManagement() {
               className="bg-zinc-900/50 border border-zinc-800 text-white text-sm rounded-xl pl-12 pr-6 py-4 w-full focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium placeholder:text-zinc-600 outline-none"
             />
           </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
-             {["all", "pending", "confirmed", "completed", "cancelled"].map((status) => (
-               <button 
-                 key={status}
-                 onClick={() => setFilter(status)}
-                 className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${filter === status ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'bg-zinc-900 text-zinc-500 hover:text-white border border-zinc-800'}`}
-               >
-                 {status}
-               </button>
-             ))}
-          </div>
         </div>
 
         {/* Table */}
@@ -113,8 +99,8 @@ export default function BookingManagement() {
                 <tr className="border-b border-zinc-900 bg-zinc-900/10">
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">Customer</th>
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">Date & Time</th>
+                  <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">Status</th>
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest">Amount</th>
-                  <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest text-center">Status</th>
                   <th className="px-8 py-5 text-xs font-bold text-zinc-500 uppercase tracking-widest text-right pr-12">Actions</th>
                 </tr>
               </thead>
@@ -127,10 +113,12 @@ export default function BookingManagement() {
                            {booking.matchId ? <Trophy className="w-6 h-6 text-amber-500" /> : <User className="w-6 h-6" />}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-white mb-0.5">{booking.user?.username || booking.customerName || "Walk-in Customer"}</p>
+                          <p className="text-sm font-bold text-white mb-0.5">
+                            {booking.teamMatch?.customTeamName || booking.user?.username || booking.customerName || "Walk-in Customer"}
+                          </p>
                           <div className="flex items-center gap-1.5">
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter ${booking.matchId ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-500"}`}>
-                              {booking.matchId ? "Online Booking" : "Walk-in"}
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter ${(booking.matchId || booking.teamMatchId) ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-500"}`}>
+                              {booking.teamMatchId ? "Team Match" : booking.matchId ? "Online Game" : "Walk-in"}
                             </span>
                             <p className="text-[10px] text-zinc-700 font-bold tracking-tight">ID: #{booking.id}</p>
                           </div>
@@ -150,42 +138,40 @@ export default function BookingManagement() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
+                       <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                         booking.status === "confirmed" ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                         booking.status === "pending" ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse" :
+                         "bg-red-500/10 text-red-500 border-red-500/20"
+                       }`}>
+                          {booking.status}
+                       </span>
+                    </td>
+                    <td className="px-8 py-6">
                       <p className="text-sm font-bold text-white tracking-widest">रू {booking.totalPrice}</p>
                     </td>
-                    <td className="px-8 py-6 text-center">
-                       <div className="flex flex-col items-center gap-2">
-                         <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-zinc-900/50 bg-zinc-900/30 text-xs font-bold uppercase tracking-widest
-                          ${booking.status === 'pending' ? 'text-amber-500' : ''}
-                          ${booking.status === 'confirmed' ? 'text-green-500' : ''}
-                          ${booking.status === 'completed' ? 'text-blue-500' : ''}
-                          ${booking.status === 'cancelled' ? 'text-red-500' : ''}
-                         `}>
-                            {booking.status === 'confirmed' && <UserCheck className="w-3.5 h-3.5" />}
-                            {booking.status === 'pending' && <Clock className="w-3.5 h-3.5" />}
-                            {booking.status}
-                         </div>
-                         {booking.matchId && (
-                           <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                             <Trophy className="w-3 h-3 text-amber-500" />
-                             <span className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">Hosted Match</span>
-                           </div>
-                         )}
-                       </div>
-                    </td>
                     <td className="px-8 py-6 text-right pr-12">
-                       <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                            <button 
-                              onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                              className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-amber-500/10 hover:text-amber-500 text-zinc-600 transition-all shadow-lg"
-                              title="Cancel Booking"
-                            >
-                               <XCircle className="w-5 h-5" />
-                            </button>
+                       <div className="flex items-center justify-end gap-3">
+                          {booking.status === "pending" && (
+                            <>
+                              <button 
+                                onClick={() => handleStatusUpdate(booking.id, "confirmed")}
+                                className="h-10 w-10 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center hover:bg-green-500 text-green-500 hover:text-white transition-all shadow-lg"
+                                title="Confirm Booking"
+                              >
+                                 <CheckCircle2 className="w-5 h-5" />
+                              </button>
+                              <button 
+                                onClick={() => handleStatusUpdate(booking.id, "cancelled")}
+                                className="h-10 w-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center hover:bg-amber-500 text-amber-500 hover:text-white transition-all shadow-lg"
+                                title="Cancel Booking"
+                              >
+                                 <XCircle className="w-5 h-5" />
+                              </button>
+                            </>
                           )}
                           <button 
                             onClick={() => handleDeleteBooking(booking.id)}
-                            className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 text-zinc-600 transition-all shadow-lg"
+                            className="h-10 w-10 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center hover:bg-red-500 text-red-500 hover:text-white transition-all shadow-lg"
                             title="Permanent Delete"
                           >
                              <Trash2 className="w-5 h-5" />

@@ -3,7 +3,7 @@ import { AppState } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchUnreadCount } from "../services/api";
 
-const NotificationContext = createContext({ unreadCount: 0, refreshCount: () => {} });
+const NotificationContext = createContext({ unreadCount: 0, refreshCount: () => {}, clearBadge: () => {} });
 
 export const useNotifications = () => useContext(NotificationContext);
 
@@ -26,6 +26,10 @@ export function NotificationProvider({ children }) {
     } catch {
       // Silently fail — don't crash the app for a badge count
     }
+  }, []);
+
+  const clearBadge = useCallback(() => {
+    setUnreadCount(0);
   }, []);
 
   const startPolling = useCallback(() => {
@@ -62,7 +66,7 @@ export function NotificationProvider({ children }) {
   }, [startPolling, stopPolling]);
 
   return (
-    <NotificationContext.Provider value={{ unreadCount, refreshCount }}>
+    <NotificationContext.Provider value={{ unreadCount, refreshCount, clearBadge }}>
       {children}
     </NotificationContext.Provider>
   );

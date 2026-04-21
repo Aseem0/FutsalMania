@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Clock, XCircle, Loader2, Activity, Trophy, User,
-  ChevronLeft, ChevronRight, Trash2, Plus, Calendar
+  ChevronLeft, ChevronRight, Trash2, Plus, Calendar, Phone
 } from "lucide-react";
 import api, { deleteManagerBooking } from "../../services/api";
 
@@ -238,6 +238,10 @@ export default function ScheduleManagement() {
                   <span className="text-[10px] text-zinc-600 font-medium">Online</span>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-purple-500/60" />
+                  <span className="text-[10px] text-zinc-600 font-medium">Challenge</span>
+                </div>
+                <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-sm bg-blue-500/60" />
                   <span className="text-[10px] text-zinc-600 font-medium">Walk-in</span>
                 </div>
@@ -248,8 +252,10 @@ export default function ScheduleManagement() {
             <div className="divide-y divide-zinc-800/40">
               {slots.map((slot, idx) => {
                 const b = slot.booking;
-                const isOnline = !!b?.matchId;
-                const isWalkIn = b && !b.matchId;
+                const isSoloOnline = !!b?.matchId;
+                const isTeamOnline = !!b?.teamMatchId || !!b?.teamMatch;
+                const isPending = b?.status === "pending";
+                const isWalkIn = b && !isSoloOnline && !isTeamOnline;
                 const isActive = activeSlot?.timeVal === slot.timeVal;
 
                 return (
@@ -258,8 +264,8 @@ export default function ScheduleManagement() {
                     onClick={() => b ? setActiveSlot(isActive ? null : slot) : openBook(slot)}
                     className={`
                       group flex items-center gap-4 px-5 py-3 cursor-pointer transition-all duration-150
-                      ${b ? (isOnline ? "hover:bg-amber-500/5" : "hover:bg-blue-500/5") : "hover:bg-zinc-800/30"}
-                      ${isActive ? (isOnline ? "bg-amber-500/8" : "bg-blue-500/8") : ""}
+                      ${b ? (isTeamOnline ? "hover:bg-purple-500/5" : isSoloOnline ? "hover:bg-amber-500/5" : "hover:bg-blue-500/5") : "hover:bg-zinc-800/30"}
+                      ${isActive ? (isTeamOnline ? "bg-purple-500/8" : isSoloOnline ? "bg-amber-500/8" : "bg-blue-500/8") : ""}
                     `}
                   >
                     {/* time */}
@@ -273,31 +279,37 @@ export default function ScheduleManagement() {
                         /* BOOKED */
                         <div className={`
                           flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all
-                          ${isOnline
-                            ? "bg-amber-500/10 border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.05)]"
-                            : "bg-blue-500/10 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)]"
+                          ${isTeamOnline
+                            ? (isPending ? "bg-purple-500/10 border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.05)] border-dashed" : "bg-purple-500/10 border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.05)]")
+                            : isSoloOnline
+                              ? "bg-amber-500/10 border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.05)]"
+                              : "bg-blue-500/10 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)]"
                           }
                           ${isActive ? "scale-[1.005]" : ""}
                         `}>
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isOnline ? "bg-amber-500/20" : "bg-blue-500/20"}`}>
-                            {isOnline
-                              ? <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                              : <User className="w-3.5 h-3.5 text-blue-400" />
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isTeamOnline ? "bg-purple-500/20" : isSoloOnline ? "bg-amber-500/20" : "bg-blue-500/20"}`}>
+                            {isTeamOnline
+                              ? <Trophy className="w-3.5 h-3.5 text-purple-400" />
+                              : isSoloOnline
+                                ? <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                                : <User className="w-3.5 h-3.5 text-blue-400" />
                             }
                           </div>
                           <div className="min-w-0">
-                            <p className={`text-xs font-bold truncate ${isOnline ? "text-amber-300" : "text-blue-300"}`}>
-                              {isOnline
-                                ? (b.user?.username || "Verified Customer")
-                                : (b.customerName || "Walk-in Customer")
+                            <p className={`text-xs font-bold truncate ${isTeamOnline ? "text-purple-300" : isSoloOnline ? "text-amber-300" : "text-blue-300"}`}>
+                              {isTeamOnline
+                                ? (b.teamMatch?.customTeamName || "Team Challenge")
+                                : isSoloOnline
+                                  ? (b.user?.username || "Verified Customer")
+                                  : (b.customerName || "Walk-in Customer")
                               }
                             </p>
                             <p className="text-[10px] text-zinc-600 font-medium">
-                              {isOnline ? "Online booking" : "Walk-in"} · {slot.timeLabel} – {slot.nextLabel}
+                              {isTeamOnline ? (isPending ? "Pending Challenge" : "Matched Game") : isSoloOnline ? "Online booking" : "Walk-in"} · {slot.timeLabel} – {slot.nextLabel}
                             </p>
                           </div>
-                          <div className={`ml-auto text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${isOnline ? "bg-amber-500/15 text-amber-500" : "bg-blue-500/15 text-blue-400"}`}>
-                            Booked
+                          <div className={`ml-auto text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${isTeamOnline ? (isPending ? "bg-purple-500/15 text-purple-400" : "bg-purple-500/15 text-purple-400") : isSoloOnline ? "bg-amber-500/15 text-amber-500" : "bg-blue-500/15 text-blue-400"}`}>
+                            {isPending ? "Awaiting" : "Booked"}
                           </div>
                         </div>
                       ) : (
@@ -381,22 +393,26 @@ export default function ScheduleManagement() {
               </div>
 
               {/* time range */}
-              <div className={`rounded-xl px-4 py-3 border ${activeSlot.booking?.matchId ? "bg-amber-500/8 border-amber-500/20" : "bg-blue-500/8 border-blue-500/20"}`}>
+              <div className={`rounded-xl px-4 py-3 border ${activeSlot.booking?.teamMatchId ? (activeSlot.booking?.status === "pending" ? "bg-purple-500/8 border-purple-500/20 border-dashed" : "bg-purple-500/8 border-purple-500/20") : activeSlot.booking?.matchId ? "bg-amber-500/8 border-amber-500/20" : "bg-blue-500/8 border-blue-500/20"}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${activeSlot.booking?.matchId ? "bg-amber-500/20" : "bg-blue-500/20"}`}>
-                    {activeSlot.booking?.matchId
-                      ? <Trophy className="w-3 h-3 text-amber-400" />
-                      : <User className="w-3 h-3 text-blue-400" />
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${activeSlot.booking?.teamMatchId ? "bg-purple-500/20" : activeSlot.booking?.matchId ? "bg-amber-500/20" : "bg-blue-500/20"}`}>
+                    {activeSlot.booking?.teamMatchId
+                      ? <Trophy className="w-3 h-3 text-purple-400" />
+                      : activeSlot.booking?.matchId
+                        ? <Trophy className="w-3 h-3 text-amber-400" />
+                        : <User className="w-3 h-3 text-blue-400" />
                     }
                   </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${activeSlot.booking?.matchId ? "text-amber-500" : "text-blue-400"}`}>
-                    {activeSlot.booking?.matchId ? "Online Booking" : "Walk-in"}
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${activeSlot.booking?.teamMatchId ? "text-purple-400" : activeSlot.booking?.matchId ? "text-amber-500" : "text-blue-400"}`}>
+                    {activeSlot.booking?.teamMatchId ? (activeSlot.booking?.status === "pending" ? "Pending Challenge" : "Matched Team Game") : activeSlot.booking?.matchId ? "Online Booking" : "Walk-in"}
                   </span>
                 </div>
                 <p className="text-sm font-bold text-white leading-tight">
-                  {activeSlot.booking?.matchId
-                    ? (activeSlot.booking?.user?.username || "Verified Customer")
-                    : (activeSlot.booking?.customerName || "Walk-in Customer")}
+                  {activeSlot.booking?.teamMatchId
+                    ? (activeSlot.booking?.teamMatch?.customTeamName || "Team Challenge")
+                    : activeSlot.booking?.matchId
+                      ? (activeSlot.booking?.user?.username || "Verified Customer")
+                      : (activeSlot.booking?.customerName || "Walk-in Customer")}
                 </p>
               </div>
 
@@ -409,6 +425,17 @@ export default function ScheduleManagement() {
                   <span className="text-zinc-600 font-medium">Ref</span>
                   <span className="text-zinc-500 italic">#{activeSlot.booking?.id}</span>
                 </div>
+                {(activeSlot.booking?.match?.contactNumber || activeSlot.booking?.teamMatch?.contactNumber) && (
+                  <div className="flex justify-between text-xs pt-1">
+                    <span className="text-zinc-600 font-medium">Contact</span>
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="w-3 h-3 text-amber-500" />
+                      <span className="text-zinc-300 font-bold">
+                        {activeSlot.booking?.match?.contactNumber || activeSlot.booking?.teamMatch?.contactNumber}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

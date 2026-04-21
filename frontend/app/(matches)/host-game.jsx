@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { createMatch } from "../../services/api";
 import { Alert } from "react-native";
+import SuccessModal from "../../components/SuccessModal";
 
 // Step Components
 import ArenaStep from "../../components/host-game/ArenaStep";
@@ -21,8 +22,9 @@ export default function HostGameScreen() {
   const [gameData, setGameData] = useState({
     arena: null,
     details: { name: '', date: '', time: '' },
-    settings: { skillLevel: 'Intermediate', format: '5v5', maxPlayers: 10, price: 0 },
+    settings: { skillLevel: 'Intermediate', format: '5v5', maxPlayers: 10, price: 0, contactNumber: '' },
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -51,13 +53,13 @@ export default function HostGameScreen() {
           maxPlayers: gameData.settings.maxPlayers,
           skillLevel: gameData.settings.skillLevel,
           price: gameData.settings.price,
+          contactNumber: gameData.settings.contactNumber,
         };
 
         const response = await createMatch(matchPayload);
         
         if (response.status === 201) {
-          Alert.alert("Success", "Your game has been hosted successfully!");
-          router.replace('/(tabs)');
+          setShowSuccessModal(true);
         }
       } catch (error) {
         console.error("Error posting match:", error);
@@ -150,10 +152,15 @@ export default function HostGameScreen() {
             disabled={
               loading ||
               (currentStep === 1 && !gameData.arena) ||
-              (currentStep === 2 && (!gameData.details.date || !gameData.details.time))
+              (currentStep === 2 && (!gameData.details.date || !gameData.details.time)) ||
+              (currentStep >= 3 && !gameData.settings.contactNumber)
             }
             className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-              (loading || (currentStep === 1 && !gameData.arena) || (currentStep === 2 && (!gameData.details.date || !gameData.details.time))) 
+              (loading || 
+                (currentStep === 1 && !gameData.arena) || 
+                (currentStep === 2 && (!gameData.details.date || !gameData.details.time)) ||
+                (currentStep >= 3 && !gameData.settings.contactNumber)
+              ) 
                 ? 'bg-zinc-800' : 'bg-amber-400'
             }`}
             activeOpacity={0.9}
@@ -171,6 +178,16 @@ export default function HostGameScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <SuccessModal 
+        visible={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.replace('/(tabs)');
+        }}
+        title="Game Hosted! ⚽"
+        message="Your match is live. Players can now find and join."
+      />
     </SafeAreaView>
   );
 }

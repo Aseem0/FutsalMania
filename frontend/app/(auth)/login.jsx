@@ -6,7 +6,6 @@ import {
   Pressable,
   StatusBar,
   Keyboard,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -19,10 +18,14 @@ export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleLogin = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
     if (!username || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      setErrorMessage("Please fill in all fields");
       return;
     }
 
@@ -32,26 +35,33 @@ export default function LoginScreen() {
 
       if (response.status === 200) {
         const { accessToken, role } = response.data.userData;
+        const name = response.data.userData.username;
+
         await AsyncStorage.setItem("userToken", accessToken);
-        await AsyncStorage.setItem("username", response.data.userData.username);
+        await AsyncStorage.setItem("username", name);
         await AsyncStorage.setItem("userRole", role);
- 
-        if (role === "admin") {
-          router.replace("/(tabs)");
-        } else {
-          router.replace("/(onboarding)");
-        }
+
+        setSuccessMessage(`Welcome back, ${name}! Redirecting...`);
+
+        setTimeout(() => {
+          if (role === "admin") {
+            router.replace("/(tabs)");
+          } else {
+            router.replace("/(onboarding)");
+          }
+        }, 1500);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      const errorMessage = error.response?.data || "Something went wrong. Please try again.";
-      Alert.alert(
-        "Login Failed",
-        typeof errorMessage === "string" ? errorMessage : errorMessage.message,
-      );
+      const msg = error.response?.data?.message || "Invalid credentials. Please try again.";
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInputEmoji = (setter) => (val) => {
+    setErrorMessage("");
+    setter(val);
   };
 
   return (
@@ -72,20 +82,41 @@ export default function LoginScreen() {
 
           {/* Form */}
           <View className="px-8 pb-10">
+            {successMessage ? (
+              <View className="bg-green-500/10 border border-green-500/50 p-4 rounded-lg mb-6 flex-row items-center">
+                <MaterialCommunityIcons name="check-circle" size={20} color="#22c55e" />
+                <Text className="text-green-500 text-sm font-inter-medium ml-2 flex-1">
+                  {successMessage}
+                </Text>
+              </View>
+            ) : null}
+
+            {errorMessage ? (
+              <View className="bg-red-500/10 border border-red-500/50 p-4 rounded-lg mb-6 flex-row items-center">
+                <MaterialCommunityIcons name="alert-circle" size={20} color="#ef4444" />
+                <Text className="text-red-500 text-sm font-inter-medium ml-2 flex-1">
+                  {errorMessage}
+                </Text>
+              </View>
+            ) : null}
+
             <AuthInput
               label="Username"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={handleInputEmoji(setUsername)}
             />
 
             <AuthInput
               label="Password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={handleInputEmoji(setPassword)}
               isPassword
             />
 
-            <TouchableOpacity className="pt-2 mb-8">
+            <TouchableOpacity 
+              onPress={() => router.push("/(auth)/forgot-password")}
+              className="pt-2 mb-8"
+            >
               <Text className="text-xs font-inter text-white underline">
                 Forgot password?
               </Text>
@@ -115,6 +146,7 @@ export default function LoginScreen() {
           </View>
         </View>
       </SafeAreaView>
+
     </Pressable>
   );
 }

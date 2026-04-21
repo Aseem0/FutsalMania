@@ -21,6 +21,7 @@ export default function PostPlayerNeed() {
     time: "",
     playersNeeded: "1",
     description: "",
+    contactNumber: "",
   });
 
   const roles = ["Attacker", "Midfielder", "Defender", "Goalkeeper"];
@@ -55,8 +56,8 @@ export default function PostPlayerNeed() {
   const handlePost = async () => {
     try {
       // Basic validation
-      if (!formData.date || !formData.time) {
-        alert("Please select date and time");
+      if (!formData.date || !formData.time || !formData.contactNumber) {
+        alert("Please select date, time and provide contact number");
         return;
       }
 
@@ -67,6 +68,7 @@ export default function PostPlayerNeed() {
         time: formData.time,
         playersNeeded: parseInt(formData.playersNeeded),
         description: formData.description,
+        contactNumber: formData.contactNumber,
       };
 
       await createRecruitment(recruitmentData);
@@ -254,6 +256,26 @@ export default function PostPlayerNeed() {
                   onChangeText={(val) => setFormData({ ...formData, description: val })}
                   className="text-white font-medium text-sm border-t border-white/5 pt-4 h-24"
                   textAlignVertical="top"
+                />
+              </View>
+
+              <View className="flex-row items-center gap-2 mb-4">
+                <Text className="text-white/40 text-[10px] font-black uppercase tracking-[2px]">
+                  Host Contact Information
+                </Text>
+                <View className="bg-red-500/20 px-1.5 py-0.5 rounded border border-red-500/30">
+                  <Text className="text-red-500 text-[7px] font-black uppercase">REQUIRED</Text>
+                </View>
+              </View>
+              <View className="bg-[#111] border border-white/5 rounded-2xl p-4 mb-4 flex-row items-center">
+                <Feather name="phone" size={16} color="#fbbf24" />
+                <TextInput
+                  placeholder="Phone Number (e.g. 9841...)"
+                  placeholderTextColor="#3f3f46"
+                  keyboardType="phone-pad"
+                  value={formData.contactNumber}
+                  onChangeText={(val) => setFormData({ ...formData, contactNumber: val })}
+                  className="flex-1 text-white font-medium text-sm ml-3"
                 />
               </View>
             </View>

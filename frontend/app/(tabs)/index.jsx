@@ -11,10 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { fetchMyMatches, fetchMyApplications, fetchReceivedApplications } from "../../services/api";
+import { fetchMyMatches, fetchMyApplications, fetchReceivedApplications, fetchUserProfile } from "../../services/api";
 import { formatDate } from "../../utils/dateUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNotifications } from "../../context/NotificationContext";
+import HostChoiceModal from "../../components/HostChoiceModal";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function HomeScreen() {
   const [myApplications, setMyApplications] = useState([]);
   const [receivedApplications, setReceivedApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState("User");
+  const [isHostModalVisible, setIsHostModalVisible] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -42,15 +45,38 @@ export default function HomeScreen() {
         return;
       }
 
+      // Pre-load username from storage for instant UI
+      const storedName = await AsyncStorage.getItem("username");
+      if (storedName) setUsername(storedName);
+
       setLoading(true);
-      const [matchesRes, myAppsRes, receivedAppsRes] = await Promise.all([
-        fetchMyMatches(),
-        fetchMyApplications(),
-        fetchReceivedApplications(),
+      
+      const fetchAndLog = async (name, promise) => {
+        try {
+          const res = await promise;
+          console.log(`[Home] ${name} loaded successfully.`);
+          return res;
+        } catch (err) {
+          console.error(`[Home] Error fetching ${name}:`, err.response?.status || err.message);
+          return { data: [] }; // Fallback to empty data to avoid crashing the whole screen
+        }
+      };
+
+      const [matchesRes, myAppsRes, receivedAppsRes, profileRes] = await Promise.all([
+        fetchAndLog("Matches", fetchMyMatches()),
+        fetchAndLog("MyApplications", fetchMyApplications()),
+        fetchAndLog("ReceivedApplications", fetchReceivedApplications()),
+        fetchAndLog("UserProfile", fetchUserProfile()),
       ]);
+
       setMatches(matchesRes.data || []);
       setMyApplications(myAppsRes.data || []);
       setReceivedApplications(receivedAppsRes.data || []);
+      
+      if (profileRes.data?.username) {
+        setUsername(profileRes.data.username);
+        await AsyncStorage.setItem("username", profileRes.data.username);
+      }
     } catch (error) {
       // Don't show connectivity error if it's an authentication error (user might be logging out)
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
@@ -107,11 +133,15 @@ export default function HomeScreen() {
         </View>
 
         {/* Main Content */}
-        <ScrollView className="flex-1 pb-32" showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          className="flex-1" 
+          contentContainerStyle={{ paddingBottom: 180 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Welcome */}
           <View className="px-5 pt-8 pb-6">
             <Text className="text-3xl font-outfit-bold text-white">
-              Welcome back, User!
+              Welcome back, {username}!
             </Text>
             <Text className="text-[#A1A1AA] mt-1 text-sm font-inter-medium">
               Elevate your performance today
@@ -122,7 +152,7 @@ export default function HomeScreen() {
           <View className="px-5">
             <View className="flex-row gap-3 mb-3">
               <TouchableOpacity 
-                onPress={() => router.push('/host-game')}
+                onPress={() => setIsHostModalVisible(true)}
                 className="flex-1 flex-col gap-3 rounded-xl border border-[#1F1F1F] bg-[#121212] p-5"
                 activeOpacity={0.95}
               >
@@ -205,7 +235,7 @@ export default function HomeScreen() {
                   <MaterialCommunityIcons name="soccer-field" size={48} color="rgba(255,255,255,0.1)" />
                   <Text className="text-white/40 mt-4 font-inter-bold">No sessions scheduled yet</Text>
                   <TouchableOpacity 
-                    onPress={() => router.push('/host-game')}
+                    onPress={() => setIsHostModalVisible(true)}
                     className="mt-6 bg-amber-400 px-6 py-2 rounded-lg"
                   >
                     <Text className="text-black font-inter-black text-xs">HOST NOW</Text>
@@ -285,66 +315,48 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Applications Received (For Creators) */}
-          {receivedApplications.length > 0 && (
-            <View className="mt-8">
-              <View className="flex-row items-center justify-between px-5 mb-4">
-                <Text className="text-lg font-outfit-bold text-white">Applications Received</Text>
-              </View>
-              <View className="px-5 gap-3">
-                {receivedApplications.map((app) => (
-                  <View key={app.id} className="bg-[#121212] border border-[#1f1f1f] rounded-xl p-4 flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                      <View className="w-10 h-10 rounded-full bg-[#1e1b4b] items-center justify-center mr-3">
-                        <Text className="text-white text-xs font-inter-black">
-                          {app.applicant?.username?.substring(0, 2).toUpperCase()}
-                        </Text>
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-white font-inter-bold text-sm">{app.applicant?.username}</Text>
-                        <Text className="text-[#A1A1AA] text-[10px] uppercase font-inter-bold">
-                          Applied for {app.recruitment?.role}
-                        </Text>
-                      </View>
-                    </View>
-                    <View className="flex-row gap-2">
-                       <View className="px-2 py-1 rounded bg-amber-400/10 border border-amber-400/20">
-                          <Text className="text-amber-400 text-[10px] font-inter-bold uppercase">{app.status}</Text>
-                       </View>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
 
-          {/* Applications Sent (For Applicants) */}
-          {myApplications.length > 0 && (
-            <View className="mt-8">
-              <View className="flex-row items-center justify-between px-5 mb-4">
-                <Text className="text-lg font-outfit-bold text-white">Post Applied</Text>
-              </View>
-              <View className="px-5 gap-3">
-                {myApplications.map((app) => (
-                  <View key={app.id} className="bg-[#121212] border border-[#1f1f1f] rounded-xl p-4 flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-white font-inter-bold text-sm">
-                        {app.recruitment?.role} needed
-                      </Text>
-                      <Text className="text-[#A1A1AA] text-[10px] uppercase font-inter-bold">
-                        Hosted by {app.recruitment?.host?.username}
-                      </Text>
-                    </View>
-                    <View className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/5">
-                      <Text className="text-amber-400 text-[10px] font-inter-bold uppercase">{app.status}</Text>
+          {/* Recruitment Hub Navigation Card */}
+          {(myApplications.length > 0 || receivedApplications.length > 0) && (
+            <View className="px-5 mt-8">
+              <TouchableOpacity 
+                activeOpacity={0.95}
+                onPress={() => router.push('/(profile)/recruitment-hub')}
+                className="bg-[#121212] border border-[#1f1f1f] rounded-[24px] p-5 flex-row items-center justify-between"
+                style={{
+                  elevation: 4,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                }}
+              >
+                <View className="flex-row items-center gap-4">
+                  <View className="w-12 h-12 rounded-2xl bg-amber-400/10 items-center justify-center border border-amber-400/20">
+                    <MaterialCommunityIcons name="folder-account" size={24} color="#FFB300" />
+                  </View>
+                  <View>
+                    <Text className="text-white font-outfit-bold text-lg leading-tight uppercase italic">Recruitment Hub</Text>
+                    <View className="flex-row items-center gap-3 mt-1">
+                      <View className="bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                        <Text className="text-amber-400 text-[8px] font-inter-black uppercase tracking-widest">
+                          {myApplications.length + receivedApplications.length} TOTAL ACTIONS
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                ))}
-              </View>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={24} color="#FFB300" />
+              </TouchableOpacity>
             </View>
           )}
         </ScrollView>
       </View>
+
+      <HostChoiceModal 
+        visible={isHostModalVisible} 
+        onClose={() => setIsHostModalVisible(false)} 
+      />
     </SafeAreaView>
   );
 }

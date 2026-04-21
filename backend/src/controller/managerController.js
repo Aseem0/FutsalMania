@@ -1,4 +1,4 @@
-import { User, Arena, Booking, Schedule, Match } from "../model/index.js";
+import { User, Manager, Arena, Booking, Schedule, Match, TeamMatch } from "../model/index.js";
 import bcryptjs from "bcryptjs";
 import { Op } from "sequelize";
 import { createNotification } from "./notificationHelper.js";
@@ -8,18 +8,19 @@ import { createNotification } from "./notificationHelper.js";
 export const createManager = async (req, res) => {
   const { name, email, password, futsal_id } = req.body;
   try {
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await Manager.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcryptjs.hash(password, 8);
-    const newManager = await User.create({
+    const newManager = await Manager.create({
       username: name,
       email,
       password: hashedPassword,
       role: "manager",
       arenaId: futsal_id,
+      is_verified: true, // Managers created by Admin are verified by default
     });
 
     return res.status(201).json({
@@ -34,7 +35,7 @@ export const createManager = async (req, res) => {
 
 export const getManagers = async (req, res) => {
   try {
-    const managers = await User.findAll({
+    const managers = await Manager.findAll({
       where: { role: "manager" },
       include: [
         {
@@ -64,7 +65,7 @@ export const getManagers = async (req, res) => {
 export const deleteManager = async (req, res) => {
   const { id } = req.params;
   try {
-    const manager = await User.findByPk(id);
+    const manager = await Manager.findByPk(id);
     if (!manager || manager.role !== "manager") {
       return res.status(404).json({ message: "Manager not found" });
     }
@@ -81,13 +82,13 @@ export const updateManager = async (req, res) => {
   const { id } = req.params;
   const { name, email, futsal_id } = req.body;
   try {
-    const manager = await User.findByPk(id);
+    const manager = await Manager.findByPk(id);
     if (!manager || manager.role !== "manager") {
       return res.status(404).json({ message: "Manager not found" });
     }
 
     if (email && email !== manager.email) {
-      const existingUser = await User.findOne({ where: { email } });
+      const existingUser = await Manager.findOne({ where: { email } });
       if (existingUser) {
         return res.status(409).json({ message: "Email already in use by another account" });
       }
@@ -113,7 +114,7 @@ export const updateManagerStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
-    const manager = await User.findByPk(id);
+    const manager = await Manager.findByPk(id);
     if (!manager || manager.role !== "manager") {
       return res.status(404).json({ message: "Manager not found" });
     }
@@ -226,7 +227,11 @@ export const getManagerBookings = async (req, res) => {
 
     const bookings = await Booking.findAll({
       where,
-      include: [{ model: User, as: "user", attributes: ["username", "email"] }],
+      include: [
+        { model: User, as: "user", attributes: ["username", "email"] },
+        { model: Match, as: "match", attributes: ["id", "hostId", "contactNumber"] },
+        { model: TeamMatch, as: "teamMatch", attributes: ["id", "hostId", "customTeamName", "status", "contactNumber"] }
+      ],
       order: [["date", "DESC"], ["startTime", "ASC"]]
     });
 
@@ -312,7 +317,8 @@ export const getManagerSchedule = async (req, res) => {
        where: { arenaId, date, status: ["pending", "confirmed"] },
        include: [
          { model: User, as: "user", attributes: ["username"] },
-         { model: Match, as: "match", attributes: ["id", "hostId"] }
+         { model: Match, as: "match", attributes: ["id", "hostId", "contactNumber"] },
+         { model: TeamMatch, as: "teamMatch", attributes: ["id", "hostId", "customTeamName", "status", "contactNumber"] }
        ]
     });
 

@@ -222,7 +222,7 @@ export default function ReviewStep({ gameData, onEdit, isTeamMatch = false }) {
               <Text className="text-white font-inter-black">{settings.skillLevel || 'Any'}</Text>
             </View>
             <View className="flex-1 p-4">
-              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Price</Text>
+              <Text className="text-white/40 text-[9px] font-inter-bold uppercase mb-1">Price / Player</Text>
               <Text className="text-amber-400 font-inter-black uppercase">
                 {settings.price > 0 ? `NPR ${settings.price}` : 'FREE'}
               </Text>

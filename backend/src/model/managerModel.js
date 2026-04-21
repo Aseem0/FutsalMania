@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 
-const createUserModel = (sequelize) => {
-  const User = sequelize.define(
-    "User",
+const createManagerModel = (sequelize) => {
+  const Manager = sequelize.define(
+    "Manager",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -35,9 +35,9 @@ const createUserModel = (sequelize) => {
         allowNull: true,
       },
       role: {
-        type: DataTypes.ENUM("user", "admin"),
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "user",
+        defaultValue: "manager",
       },
       arenaId: {
         type: DataTypes.INTEGER,
@@ -54,31 +54,15 @@ const createUserModel = (sequelize) => {
       },
       is_verified: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      otp_code: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      otp_expiry: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
-      otp_attempts: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
-      last_otp_sent: {
-        type: DataTypes.DATE,
-        allowNull: true,
+        defaultValue: true, // Managers created by Admin are verified by default
       },
     },
     {
-      tableName: "users",
+      tableName: "managers",
       timestamps: true,
     }
   );
-  return User;
+  return Manager;
 };
 
-export default createUserModel;
+export default createManagerModel;

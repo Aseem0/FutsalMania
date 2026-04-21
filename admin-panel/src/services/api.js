@@ -47,8 +47,20 @@ export const createManagerBooking = (bookingData) => {
   return api.post('/manager/bookings', bookingData);
 };
 
+export const updateManagerBooking = (id, status) => {
+  return api.patch(`/manager/bookings/${id}`, { status });
+};
+
 export const deleteManagerBooking = (id) => {
   return api.delete(`/manager/bookings/${id}`);
+};
+
+export const fetchTournamentRegistrations = (id) => {
+  return api.get(`/tournaments/${id}/registrations`);
+};
+
+export const deleteTournamentRegistration = (registrationId) => {
+  return api.delete(`/tournaments/registrations/${registrationId}`);
 };
 
 export default api;

@@ -6,6 +6,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import { hostTeamMatch, fetchMyTeams } from "../../services/api";
 import { Alert } from "react-native";
+import SuccessModal from "../../components/SuccessModal";
 
 // Step Components
 import ArenaStep from "../../components/host-game/ArenaStep";
@@ -25,8 +26,9 @@ export default function TeamHostScreen() {
     customTeamName: '',
     arena: null,
     details: { date: '', time: '' },
-    settings: { format: '5v5', skillLevel: 'Intermediate', matchType: 'Friendly', price: 0 },
+    settings: { format: '5v5', skillLevel: 'Intermediate', matchType: 'Friendly', price: 0, contactNumber: '' },
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -77,6 +79,7 @@ export default function TeamHostScreen() {
           time: gameData.details.time,
           format: gameData.settings.format,
           price: 0,
+          contactNumber: gameData.settings.contactNumber,
         };
 
         console.log("📡 Payload:", JSON.stringify(matchPayload));
@@ -84,8 +87,7 @@ export default function TeamHostScreen() {
         console.log("📡 Response status:", response.status);
         console.log("📡 Response data:", JSON.stringify(response.data));
 
-        Alert.alert("Victory! 🏆", "Your team challenge has been broadcasted. Opponents can now find you!");
-        router.replace('/(tabs)');
+        setShowSuccessModal(true);
       } catch (error) {
         console.error("❌ Error posting team match:", error);
         console.error("❌ Error response:", error.response?.data);
@@ -168,6 +170,7 @@ export default function TeamHostScreen() {
           )}
           {currentStep === 2 && (
             <DetailsStep 
+              arenaId={gameData.arena?.id}
               details={gameData.details}
               onUpdate={(details) => setGameData({ ...gameData, details: { ...gameData.details, ...details } })}
             />
@@ -220,6 +223,16 @@ export default function TeamHostScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <SuccessModal 
+        visible={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.replace('/(tabs)');
+        }}
+        title="Challenge Live! 🏆"
+        message="Your team challenge has been broadcasted. Opponents can now find you."
+      />
     </SafeAreaView>
   );
 }

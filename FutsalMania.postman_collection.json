@@ -1,0 +1,687 @@
+{
+  "info": {
+    "name": "FutsalMania API",
+    "description": "Complete API collection for the FutsalMania platform. Set the 'baseUrl' and 'token' variables before use.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://192.168.101.4:5000/api", "type": "string" },
+    { "key": "token", "value": "YOUR_JWT_TOKEN_HERE", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/register", "host": ["{{baseUrl}}"], "path": ["register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "201 Created",
+            "body": "{ \"message\": \"OTP sent to your email. Please verify.\" }"
+          }]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/verify-otp", "host": ["{{baseUrl}}"], "path": ["verify-otp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"otp\": \"123456\"\n}"
+            }
+          },
+          "response": [{ "name": "Success", "status": "200 OK", "body": "{ \"message\": \"Email verified successfully.\" }" }]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/resend-otp", "host": ["{{baseUrl}}"], "path": ["resend-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "200 OK",
+            "body": "{ \"token\": \"jwt_token_here\", \"user\": { \"id\": 1, \"username\": \"testuser\", \"role\": \"player\" } }"
+          }]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/forgot-password", "host": ["{{baseUrl}}"], "path": ["forgot-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/reset-password", "host": ["{{baseUrl}}"], "path": ["reset-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"newpassword123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] }
+          },
+          "response": [{ "name": "Success", "status": "200 OK", "body": "{ \"id\": 1, \"username\": \"testuser\", \"email\": \"test@example.com\", \"profilePicture\": null }" }]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"newusername\",\n  \"profilePicture\": \"base64_or_url\"\n}" }
+          }
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Get Users Count (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users/count", "host": ["{{baseUrl}}"], "path": ["users", "count"] }
+          }
+        },
+        {
+          "name": "Admin Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/users/admin", "host": ["{{baseUrl}}"], "path": ["users", "admin"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"manageruser\",\n  \"email\": \"manager@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"manager\"\n}" }
+          }
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users/:id", "host": ["{{baseUrl}}"], "path": ["users", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Arenas",
+      "item": [
+        {
+          "name": "Get All Arenas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/arenas", "host": ["{{baseUrl}}"], "path": ["arenas"] }
+          },
+          "response": [{ "name": "Success", "status": "200 OK", "body": "[{ \"id\": 1, \"name\": \"Arena One\", \"location\": \"Kathmandu\", \"price\": 1500 }]" }]
+        },
+        {
+          "name": "Get Arena Slots",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/arenas/:id/slots?date=2026-04-20", "host": ["{{baseUrl}}"], "path": ["arenas", ":id", "slots"], "query": [{ "key": "date", "value": "2026-04-20" }], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Create Arena (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/arenas", "host": ["{{baseUrl}}"], "path": ["arenas"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Arena\",\n  \"location\": \"Lalitpur\",\n  \"price\": 2000,\n  \"image\": \"https://example.com/image.jpg\",\n  \"description\": \"Premium futsal court\"\n}" }
+          }
+        },
+        {
+          "name": "Update Arena (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/arenas/:id", "host": ["{{baseUrl}}"], "path": ["arenas", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Arena Name\",\n  \"price\": 2500\n}" }
+          }
+        },
+        {
+          "name": "Delete Arena (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/arenas/:id", "host": ["{{baseUrl}}"], "path": ["arenas", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matches (Solo)",
+      "item": [
+        {
+          "name": "Get All Matches",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/matches", "host": ["{{baseUrl}}"], "path": ["matches"] }
+          }
+        },
+        {
+          "name": "Get My Matches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/matches/my", "host": ["{{baseUrl}}"], "path": ["matches", "my"] }
+          }
+        },
+        {
+          "name": "Get Match By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/matches/:id", "host": ["{{baseUrl}}"], "path": ["matches", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Create Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/matches", "host": ["{{baseUrl}}"], "path": ["matches"] },
+            "body": { "mode": "raw", "raw": "{\n  \"arenaId\": 1,\n  \"date\": \"2026-04-25\",\n  \"time\": \"18:00\",\n  \"format\": \"5v5\",\n  \"maxPlayers\": 10,\n  \"skillLevel\": \"Intermediate\",\n  \"price\": 200,\n  \"contactNumber\": \"9841000000\"\n}" }
+          }
+        },
+        {
+          "name": "Join Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/matches/:id/join", "host": ["{{baseUrl}}"], "path": ["matches", ":id", "join"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Leave Match",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/matches/:id/leave", "host": ["{{baseUrl}}"], "path": ["matches", ":id", "leave"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Delete Match",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/matches/:id", "host": ["{{baseUrl}}"], "path": ["matches", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "Get All Teams",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/teams", "host": ["{{baseUrl}}"], "path": ["teams"] }
+          }
+        },
+        {
+          "name": "Get My Teams",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/my", "host": ["{{baseUrl}}"], "path": ["teams", "my"] }
+          }
+        },
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/teams", "host": ["{{baseUrl}}"], "path": ["teams"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"The Dragons\",\n  \"description\": \"Best futsal team in Kathmandu\",\n  \"logo\": \"https://example.com/logo.png\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Team Matches",
+      "item": [
+        {
+          "name": "Get All Team Matches",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/team-matches", "host": ["{{baseUrl}}"], "path": ["team-matches"] }
+          }
+        },
+        {
+          "name": "Get Team Match By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/team-matches/:id", "host": ["{{baseUrl}}"], "path": ["team-matches", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Host Team Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/team-matches", "host": ["{{baseUrl}}"], "path": ["team-matches"] },
+            "body": { "mode": "raw", "raw": "{\n  \"hostTeamId\": 1,\n  \"arenaId\": 1,\n  \"date\": \"2026-04-25\",\n  \"time\": \"16:00\",\n  \"format\": \"5v5\",\n  \"skillLevel\": \"Competitive\",\n  \"contactNumber\": \"9841000000\"\n}" }
+          }
+        },
+        {
+          "name": "Join As Opponent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/team-matches/:matchId/join", "host": ["{{baseUrl}}"], "path": ["team-matches", ":matchId", "join"], "variable": [{ "key": "matchId", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"teamId\": 2\n}" }
+          }
+        },
+        {
+          "name": "Delete Team Match",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/team-matches/:id", "host": ["{{baseUrl}}"], "path": ["team-matches", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recruitment",
+      "item": [
+        {
+          "name": "Get All Recruitments",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/recruitments", "host": ["{{baseUrl}}"], "path": ["recruitments"] }
+          }
+        },
+        {
+          "name": "Create Recruitment Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/recruitments", "host": ["{{baseUrl}}"], "path": ["recruitments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"Attacker\",\n  \"level\": \"Intermediate\",\n  \"date\": \"2026-04-25\",\n  \"time\": \"07:00 AM\",\n  \"playersNeeded\": 2,\n  \"description\": \"Need a fast attacker\",\n  \"contactNumber\": \"9841000000\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Recruitment Post",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/:id", "host": ["{{baseUrl}}"], "path": ["recruitments", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Apply to Recruitment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/:id/apply", "host": ["{{baseUrl}}"], "path": ["recruitments", ":id", "apply"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/applications/my", "host": ["{{baseUrl}}"], "path": ["recruitments", "applications", "my"] }
+          }
+        },
+        {
+          "name": "Get Received Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/applications/received", "host": ["{{baseUrl}}"], "path": ["recruitments", "applications", "received"] }
+          }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/applications/:id", "host": ["{{baseUrl}}"], "path": ["recruitments", "applications", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"accepted\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/recruitments/applications/:id", "host": ["{{baseUrl}}"], "path": ["recruitments", "applications", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tournaments",
+      "item": [
+        {
+          "name": "Get All Tournaments",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tournaments", "host": ["{{baseUrl}}"], "path": ["tournaments"] }
+          }
+        },
+        {
+          "name": "Get Tournament By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tournaments/:id", "host": ["{{baseUrl}}"], "path": ["tournaments", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Create Tournament (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tournaments", "host": ["{{baseUrl}}"], "path": ["tournaments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Spring Cup 2026\",\n  \"arenaId\": 1,\n  \"description\": \"Annual futsal tournament\",\n  \"startDate\": \"2026-05-01\",\n  \"endDate\": \"2026-05-10\",\n  \"registrationFee\": 500,\n  \"prize\": 10000,\n  \"status\": \"open\"\n}" }
+          }
+        },
+        {
+          "name": "Update Tournament (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tournaments/:id", "host": ["{{baseUrl}}"], "path": ["tournaments", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"closed\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Tournament (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/tournaments/:id", "host": ["{{baseUrl}}"], "path": ["tournaments", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Register for Tournament",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tournaments/:id/register", "host": ["{{baseUrl}}"], "path": ["tournaments", ":id", "register"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"teamName\": \"The Dragons\",\n  \"players\": [\"Player1\", \"Player2\", \"Player3\"]\n}" }
+          }
+        },
+        {
+          "name": "Get Tournament Registrations (Admin/Manager)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/tournaments/:id/registrations", "host": ["{{baseUrl}}"], "path": ["tournaments", ":id", "registrations"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Delete Tournament Registration (Admin/Manager)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/tournaments/registrations/:registrationId", "host": ["{{baseUrl}}"], "path": ["tournaments", "registrations", ":registrationId"], "variable": [{ "key": "registrationId", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Managers (Admin)",
+      "item": [
+        {
+          "name": "Get All Managers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/managers", "host": ["{{baseUrl}}"], "path": ["managers"] }
+          }
+        },
+        {
+          "name": "Create Manager",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/managers", "host": ["{{baseUrl}}"], "path": ["managers"] },
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": 2,\n  \"arenaId\": 1\n}" }
+          }
+        },
+        {
+          "name": "Update Manager (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/managers/:id", "host": ["{{baseUrl}}"], "path": ["managers", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"arenaId\": 2\n}" }
+          }
+        },
+        {
+          "name": "Update Manager Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/managers/:id", "host": ["{{baseUrl}}"], "path": ["managers", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Manager",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/managers/:id", "host": ["{{baseUrl}}"], "path": ["managers", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Get All Bookings (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/bookings", "host": ["{{baseUrl}}"], "path": ["bookings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manager Panel",
+      "item": [
+        {
+          "name": "Get My Arena",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/manager/arena", "host": ["{{baseUrl}}"], "path": ["manager", "arena"] }
+          }
+        },
+        {
+          "name": "Update My Arena",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/manager/arena", "host": ["{{baseUrl}}"], "path": ["manager", "arena"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Arena\",\n  \"price\": 1800\n}" }
+          }
+        },
+        {
+          "name": "Get Arena Bookings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/manager/bookings", "host": ["{{baseUrl}}"], "path": ["manager", "bookings"] }
+          }
+        },
+        {
+          "name": "Create Walk-in Booking",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/manager/bookings", "host": ["{{baseUrl}}"], "path": ["manager", "bookings"] },
+            "body": { "mode": "raw", "raw": "{\n  \"date\": \"2026-04-25\",\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:00\",\n  \"totalPrice\": 1500,\n  \"notes\": \"Walk-in customer\"\n}" }
+          }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/manager/bookings/:id", "host": ["{{baseUrl}}"], "path": ["manager", "bookings", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"confirmed\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/manager/bookings/:id", "host": ["{{baseUrl}}"], "path": ["manager", "bookings", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Get Arena Schedule",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/manager/schedule", "host": ["{{baseUrl}}"], "path": ["manager", "schedule"] }
+          }
+        },
+        {
+          "name": "Update Schedule Slot",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/manager/schedule/:id", "host": ["{{baseUrl}}"], "path": ["manager", "schedule", ":id"], "variable": [{ "key": "id", "value": "1" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"isAvailable\": false\n}" }
+          }
+        },
+        {
+          "name": "Get Arena Customers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/manager/customers", "host": ["{{baseUrl}}"], "path": ["manager", "customers"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Announcements",
+      "item": [
+        {
+          "name": "Get All Announcements",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/announcements", "host": ["{{baseUrl}}"], "path": ["announcements"] }
+          }
+        },
+        {
+          "name": "Create Announcement (Admin/Manager)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/announcements", "host": ["{{baseUrl}}"], "path": ["announcements"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Arena Maintenance\",\n  \"content\": \"Arena will be closed on Sunday for maintenance.\",\n  \"arenaId\": 1\n}" }
+          }
+        },
+        {
+          "name": "Delete Announcement (Admin/Manager)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/announcements/:id", "host": ["{{baseUrl}}"], "path": ["announcements", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"] }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/unread-count", "host": ["{{baseUrl}}"], "path": ["notifications", "unread-count"] }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/:id/read", "host": ["{{baseUrl}}"], "path": ["notifications", ":id", "read"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["notifications", "read-all"] }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/:id", "host": ["{{baseUrl}}"], "path": ["notifications", ":id"], "variable": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Clear All Notifications",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/clear-all", "host": ["{{baseUrl}}"], "path": ["notifications", "clear-all"] }
+          }
+        }
+      ]
+    }
+  ]
+}

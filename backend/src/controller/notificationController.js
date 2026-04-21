@@ -59,3 +59,56 @@ export const markAllRead = async (req, res) => {
     res.status(500).json({ message: "Failed to mark all as read" });
   }
 };
+
+// DELETE /notifications/:id — delete a notification
+export const deleteNotification = async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      where: { id: req.params.id, userId: req.user.id },
+    });
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    await notification.destroy();
+    res.json({ success: true });
+  } catch (err) {
+    console.error("deleteNotification:", err);
+    res.status(500).json({ message: "Failed to delete notification" });
+  }
+};
+
+// POST /notifications/clear-all — clear all of user's notifications
+export const clearAllNotifications = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      console.error("[NotificationController] No userId found in req.user");
+      return res.status(401).json({ success: false, message: "Unauthorized: No user ID" });
+    }
+
+    console.log(`[NotificationController] Attempting to clear notifications for user ${userId}...`);
+    
+    // First, check how many exist
+    const countBefore = await Notification.count({ where: { userId } });
+    
+    const deletedCount = await Notification.destroy({
+      where: { userId },
+    });
+    
+    console.log(`[NotificationController] User ${userId}: found ${countBefore}, deleted ${deletedCount}.`);
+    
+    res.json({ 
+      success: true, 
+      count: deletedCount,
+      previousCount: countBefore 
+    });
+  } catch (err) {
+    console.error("[NotificationController] clearAllNotifications Error:", err);
+    res.status(500).json({ 
+      message: "Failed to clear notifications", 
+      error: err.message,
+      success: false 
+    });
+  }
+};

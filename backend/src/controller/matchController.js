@@ -4,8 +4,23 @@ import { createNotification } from "./notificationHelper.js";
 
 export const createMatch = async (req, res) => {
   try {
-    const { arenaId, date, time, format, maxPlayers, skillLevel, price } = req.body;
+    const { arenaId, date, time, format, maxPlayers, skillLevel, price, contactNumber } = req.body;
     const hostId = req.user.id;
+
+    // Check if date/time is in the past
+    const currentDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kathmandu", hour12: false }).substring(0, 5);
+
+    if (date < currentDate) {
+      return res.status(400).json({ message: "Cannot host a game in the past." });
+    }
+    if (date === currentDate && time < currentTime) {
+      return res.status(400).json({ message: "This time has already passed today." });
+    }
+
+    if (!contactNumber) {
+      return res.status(400).json({ message: "Contact number is required so players can reach you." });
+    }
 
     // Check for existing bookings at this time and arena
     const existingBooking = await Booking.findOne({
@@ -21,6 +36,11 @@ export const createMatch = async (req, res) => {
       return res.status(409).json({ message: "This slot is already booked. Please choose another time." });
     }
 
+    const arena = await Arena.findByPk(arenaId, { attributes: ["name", "price"] });
+    if (!arena) {
+      return res.status(404).json({ message: "Arena not found." });
+    }
+
     const newMatch = await Match.create({
       hostId,
       arenaId,
@@ -30,6 +50,7 @@ export const createMatch = async (req, res) => {
       maxPlayers,
       skillLevel,
       price,
+      contactNumber,
     });
 
     
@@ -46,7 +67,7 @@ export const createMatch = async (req, res) => {
        date,
        startTime: time,
        endTime: endTime,
-       totalPrice: price,
+       totalPrice: arena.price || 0,
        status: "confirmed", // AUTO-CONFIRM
        arenaId,
        userId: hostId,
@@ -54,12 +75,11 @@ export const createMatch = async (req, res) => {
     });
 
     // Notify the host that their game was created successfully
-    const arena = await Arena.findByPk(arenaId, { attributes: ["name"] });
     createNotification({
       userId: hostId,
       type: "match_join",
       title: "🏟️ Game Hosted Successfully!",
-      body: `Your ${format} match at ${arena?.name || "the arena"} on ${date} at ${time} is now live. Share it so players can join!`,
+      body: `Your ${format} match at ${arena.name || "the arena"} on ${date} at ${time} is now live. Share it so players can join!`,
       relatedId: newMatch.id,
     });
 
@@ -73,12 +93,27 @@ export const createMatch = async (req, res) => {
 
 export const getMatches = async (req, res) => {
   try {
+    const currentDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kathmandu", hour12: false }).substring(0, 5);
+
     const matches = await Match.findAll({
+      where: {
+        status: { [Sequelize.Op.in]: ["open", "full"] },
+        [Sequelize.Op.or]: [
+          { date: { [Sequelize.Op.gt]: currentDate } },
+          {
+            [Sequelize.Op.and]: [
+              { date: currentDate },
+              { time: { [Sequelize.Op.gte]: currentTime } },
+            ],
+          },
+        ],
+      },
       include: [
         { model: Arena, as: "arena" },
         { model: User, as: "host", attributes: ["id", "username"] },
       ],
-      order: [["createdAt", "DESC"]],
+      order: [["date", "ASC"], ["time", "ASC"]],
     });
 
     res.status(200).json(matches);
@@ -91,24 +126,79 @@ export const getMatches = async (req, res) => {
 export const getMyMatches = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log(`[API] Fetching MyMatches (Solo) for user: ${userId}`);
+    const currentDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kathmandu", hour12: false }).substring(0, 5);
+
     const matches = await Match.findAll({
       where: {
+        status: { [Sequelize.Op.notIn]: ["cancelled", "completed"] },
         [Sequelize.Op.or]: [
-          { hostId: userId },
-          Sequelize.where(
-            Sequelize.literal(`(SELECT COUNT(*) FROM "MatchPlayers" WHERE "MatchPlayers"."matchId" = "Match"."id" AND "MatchPlayers"."userId" = :userId)`),
-            { [Sequelize.Op.gt]: 0 }
-          ),
+          { date: { [Sequelize.Op.gt]: currentDate } },
+          {
+            [Sequelize.Op.and]: [
+              { date: currentDate },
+              { time: { [Sequelize.Op.gte]: currentTime } },
+            ],
+          },
         ],
       },
-      replacements: { userId },
       include: [
         { model: Arena, as: "arena" },
         { model: User, as: "host", attributes: ["id", "username"] },
+        {
+          model: User,
+          as: "players",
+          attributes: ["id"],
+          through: { attributes: [] },
+          where: { id: userId },
+          required: false // important: we will filter in JS if needed, or see below
+        }
       ],
       order: [["date", "ASC"], ["time", "ASC"]],
     });
-    res.status(200).json(matches);
+
+    // Since we need matches where user is EITHER host OR a player
+    // Sequelize complex OR across associations can be tricky, so we'll do a slightly smarter query:
+    const myMatches = await Match.findAll({
+      where: {
+        [Sequelize.Op.and]: [
+          {
+            [Sequelize.Op.or]: [
+              { hostId: userId },
+              { '$players.id$': userId }
+            ]
+          },
+          {
+            status: { [Sequelize.Op.notIn]: ["cancelled", "completed"] },
+            [Sequelize.Op.or]: [
+              { date: { [Sequelize.Op.gt]: currentDate } },
+              {
+                [Sequelize.Op.and]: [
+                  { date: currentDate },
+                  { time: { [Sequelize.Op.gte]: currentTime } },
+                ],
+              },
+            ],
+          }
+        ]
+      },
+      include: [
+        { model: Arena, as: "arena" },
+        { model: User, as: "host", attributes: ["id", "username"] },
+        {
+          model: User,
+          as: "players",
+          attributes: ["id"],
+          through: { attributes: [] },
+          required: false
+        }
+      ],
+      subQuery: false,
+      order: [["date", "ASC"], ["time", "ASC"]],
+    });
+
+    res.status(200).json(myMatches);
   } catch (error) {
     console.error("Error fetching user matches:", error);
     res.status(500).json({ message: "Failed to fetch user matches" });

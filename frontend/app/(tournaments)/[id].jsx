@@ -148,19 +148,33 @@ export default function TournamentDetails() {
             <View className="bg-zinc-900/50 p-6 rounded-[32px] border border-white/5 mb-10">
                <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-white/40 text-[10px] font-black uppercase tracking-widest">Registration Status</Text>
-                  <Text className="text-amber-400 text-[10px] font-black uppercase tracking-widest">7/16 Teams</Text>
+                  <Text className="text-amber-400 text-[10px] font-black uppercase tracking-widest">
+                    {tournament.registeredTeams || 0} / {tournament.maxTeams || "--"} Teams
+                  </Text>
                </View>
                <View className="w-full h-2 bg-black rounded-full overflow-hidden">
-                  <View className="w-[45%] h-full bg-amber-400 rounded-full shadow-lg shadow-amber-400/50" />
+                  <View 
+                    style={{ width: `${Math.min(100, ((tournament.registeredTeams || 0) / (tournament.maxTeams || 1)) * 100)}%` }}
+                    className="h-full bg-amber-400 rounded-full shadow-lg shadow-amber-400/50" 
+                  />
                </View>
             </View>
 
             <TouchableOpacity 
               activeOpacity={0.8}
-              onPress={() => Alert.alert("Coming Soon", "Team registration will be available shortly.")}
-              className="bg-amber-400 py-6 rounded-[32px] items-center justify-center mb-10 shadow-xl shadow-amber-400/20"
+              onPress={() => router.push({
+                pathname: "/(tournaments)/register",
+                params: { 
+                  id: tournament.id,
+                  name: tournament.name
+                }
+              })}
+              disabled={tournament.status !== 'upcoming'}
+              className={`bg-amber-400 py-6 rounded-[32px] items-center justify-center mb-10 shadow-xl shadow-amber-400/20 ${tournament.status !== 'upcoming' ? 'opacity-50' : ''}`}
             >
-              <Text className="text-black font-black text-md uppercase tracking-[4px]">Register Team</Text>
+              <Text className="text-black font-black text-md uppercase tracking-[4px]">
+                {tournament.status === 'upcoming' ? "Register Team" : "Registrations Closed"}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

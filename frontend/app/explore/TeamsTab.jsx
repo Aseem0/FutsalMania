@@ -146,7 +146,7 @@ const TeamsTab = () => {
         {loading ? (
           <ActivityIndicator color="#FFB300" className="mt-10" />
         ) : (
-          <View className="gap-6 pb-32">
+          <View className="gap-6 pb-44">
             {matches.length > 0 ? (
               matches.map(item => (
                 <ChallengeCard

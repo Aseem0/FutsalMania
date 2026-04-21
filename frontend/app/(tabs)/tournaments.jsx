@@ -28,7 +28,7 @@ const TournamentCard = ({ tournament, onJoin }) => {
     <TouchableOpacity 
       activeOpacity={0.9}
       onPress={() => onJoin(tournament.id)}
-      className="mb-6 w-full h-64 rounded-[40px] overflow-hidden border border-white/5 shadow-2xl relative"
+      className="mb-6 w-full h-48 rounded-3xl overflow-hidden border border-white/5 shadow-2xl relative"
     >
       {/* Background Image */}
       <Image 
@@ -41,37 +41,37 @@ const TournamentCard = ({ tournament, onJoin }) => {
       <View className="absolute inset-0 bg-black/60" />
       
       {/* Content Overlay */}
-      <View className="flex-1 p-7 justify-between">
+      <View className="flex-1 p-5 justify-between">
         <View className="flex-row justify-between items-start">
           <View className="flex-1 mr-4">
-            <Text className="text-white font-outfit-bold text-2xl uppercase tracking-tighter leading-7 shadow-lg">
+            <Text className="text-white font-outfit-bold text-xl uppercase tracking-tighter leading-6 shadow-lg">
               {name}
             </Text>
-            <View className="flex-row items-center mt-2">
+            <View className="flex-row items-center mt-1">
               <View className="bg-amber-400 px-2 py-0.5 rounded-full mr-2">
-                 <Text className="text-black text-[8px] font-inter-black uppercase tracking-widest">{status || "OPEN"}</Text>
+                 <Text className="text-black text-[7px] font-inter-black uppercase tracking-widest">{status || "OPEN"}</Text>
               </View>
               <View className="flex-row items-center">
-                <MaterialIcons name="place" size={12} color="#fbbf24" />
-                <Text className="text-white/70 font-inter-bold text-[9px] ml-1 uppercase tracking-tight" numberOfLines={1}>{location}</Text>
+                <MaterialIcons name="place" size={10} color="#fbbf24" />
+                <Text className="text-white/70 font-inter-bold text-[8px] ml-1 uppercase tracking-tight" numberOfLines={1}>{location}</Text>
               </View>
             </View>
           </View>
-          <View className="bg-black/40 px-3 py-2 rounded-2xl border border-white/10 backdrop-blur-md">
-            <Text className="text-white text-[10px] font-inter-black uppercase tracking-widest">{displayDate}</Text>
+          <View className="bg-black/40 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
+            <Text className="text-white text-[9px] font-inter-black uppercase tracking-widest">{displayDate}</Text>
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between bg-white/5 p-4 rounded-[28px] border border-white/10">
+        <View className="flex-row items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/10">
           <View>
-            <Text className="text-white/40 text-[8px] font-inter-black uppercase tracking-[3px] mb-1">Entry Fee</Text>
-            <Text className="text-white font-outfit-bold text-lg tracking-tighter">Rs. {entryFee || "0"}</Text>
+            <Text className="text-white/40 text-[7px] font-inter-black uppercase tracking-[2px] mb-0.5">Entry Fee</Text>
+            <Text className="text-white font-outfit-bold text-base tracking-tighter">Rs. {entryFee || "0"}</Text>
           </View>
           <View className="items-end">
-            <Text className="text-amber-400 font-inter-black text-[10px] uppercase tracking-widest mb-1">
+            <Text className="text-amber-400 font-inter-black text-[9px] uppercase tracking-widest mb-0.5">
               {prizePool ? `Rs. ${prizePool}` : "TROPHY"}
             </Text>
-            <Text className="text-white/40 text-[8px] font-inter-black uppercase tracking-[3px]">Prize Pool</Text>
+            <Text className="text-white/40 text-[7px] font-inter-black uppercase tracking-[2px]">Prize Pool</Text>
           </View>
         </View>
       </View>

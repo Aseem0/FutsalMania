@@ -20,6 +20,7 @@ export default function ArenaStep({ selectedArena, onSelect }) {
   const [arenas, setArenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadArenas();
@@ -38,6 +39,11 @@ export default function ArenaStep({ selectedArena, onSelect }) {
       setLoading(false);
     }
   };
+
+  const filteredArenas = arenas.filter((arena) =>
+    arena.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    arena.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -99,73 +105,96 @@ export default function ArenaStep({ selectedArena, onSelect }) {
           className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white"
           placeholder="Search arenas..."
           placeholderTextColor="rgba(255,255,255,0.3)"
-          style={Platform.OS === 'web' ? { outlineWidth: 0 } : {}}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={Platform.OS === "web" ? { outlineWidth: 0 } : {}}
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchQuery("")}
+            className="absolute right-4 top-4 z-10"
+          >
+            <MaterialIcons name="close" size={20} color="rgba(255,255,255,0.3)" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Arena List */}
       <View className="gap-4">
-        {arenas.map((arena) => (
-          <TouchableOpacity
-            key={arena.id}
-            onPress={() => onSelect(arena)}
-            activeOpacity={0.8}
-            className={`p-3 rounded-2xl flex-row gap-4 items-center border ${
-              selectedArena?.id === arena.id
-                ? "bg-amber-400/5 border-amber-400"
-                : "bg-[#111] border-white/5"
-            }`}
-          >
-            <View className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
-              <Image
-                source={{ uri: arena.image }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            </View>
+        {filteredArenas.length > 0 ? (
+          filteredArenas.map((arena) => (
+            <TouchableOpacity
+              key={arena.id}
+              onPress={() => onSelect(arena)}
+              activeOpacity={0.8}
+              className={`p-3 rounded-2xl flex-row gap-4 items-center border ${
+                selectedArena?.id === arena.id
+                  ? "bg-amber-400/5 border-amber-400"
+                  : "bg-[#111] border-white/5"
+              }`}
+            >
+              <View className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
+                <Image
+                  source={{ uri: arena.image }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+              </View>
 
-            <View className="flex-1">
-              <View className="flex-row justify-between items-start">
-                <Text className="font-outfit-bold text-white text-md uppercase leading-none">
-                  {arena.name}
-                </Text>
-                <View className="flex-row items-center">
-                  <MaterialIcons name="star" size={12} color="#fbbf24" />
-                  <Text className="text-xs ml-1 font-inter-bold text-amber-400">
-                    {arena.rating}
+              <View className="flex-1">
+                <View className="flex-row justify-between items-start">
+                  <Text className="font-outfit-bold text-white text-md uppercase leading-none">
+                    {arena.name}
+                  </Text>
+                  <View className="flex-row items-center">
+                    <MaterialIcons name="star" size={12} color="#fbbf24" />
+                    <Text className="text-xs ml-1 font-inter-bold text-amber-400">
+                      {arena.rating}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center mt-1">
+                  <MaterialIcons
+                    name="place"
+                    size={12}
+                    color="rgba(255,255,255,0.4)"
+                  />
+                  <Text className="text-white/40 text-[10px] ml-1 font-inter-medium">
+                    {arena.location}
+                  </Text>
+                </View>
+
+                <View className="mt-2 bg-amber-400/10 px-2 py-0.5 rounded-full self-start">
+                  <Text className="text-amber-400 text-[10px] font-inter-bold uppercase tracking-wider">
+                    {arena.distance}
                   </Text>
                 </View>
               </View>
 
-              <View className="flex-row items-center mt-1">
-                <MaterialIcons
-                  name="place"
-                  size={12}
-                  color="rgba(255,255,255,0.4)"
-                />
-                <Text className="text-white/40 text-[10px] ml-1 font-inter-medium">
-                  {arena.location}
-                </Text>
-              </View>
-
-              <View className="mt-2 bg-amber-400/10 px-2 py-0.5 rounded-full self-start">
-                <Text className="text-amber-400 text-[10px] font-inter-bold uppercase tracking-wider">
-                  {arena.distance}
-                </Text>
-              </View>
-            </View>
-
-            {selectedArena?.id === arena.id && (
-              <View className="absolute top-2 right-2 bg-amber-400 rounded-full w-5 h-5 items-center justify-center">
-                <MaterialIcons name="check" size={14} color="#000000" />
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
+              {selectedArena?.id === arena.id && (
+                <View className="absolute top-2 right-2 bg-amber-400 rounded-full w-5 h-5 items-center justify-center">
+                  <MaterialIcons name="check" size={14} color="#000000" />
+                </View>
+              )}
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View className="py-10 items-center justify-center">
+            <MaterialIcons
+              name="search-off"
+              size={48}
+              color="rgba(255,255,255,0.1)"
+            />
+            <Text className="text-white/30 mt-4 font-bold">
+              No arenas found for "{searchQuery}"
+            </Text>
+          </View>
+        )}
 
         <View className="py-8">
           <Text className="text-white/20 text-[10px] uppercase tracking-[3px] font-inter-bold text-center">
-            {arenas.length} venues available
+            {filteredArenas.length} venues available
           </Text>
         </View>
       </View>

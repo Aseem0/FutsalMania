@@ -14,6 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchMatchById, joinMatch, leaveMatch, deleteMatch, fetchUserProfile } from "../../services/api";
+import ConfirmModal from "../../components/ConfirmModal";
+import SuccessModal from "../../components/SuccessModal";
 
 export default function MatchDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -23,6 +25,8 @@ export default function MatchDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // 'delete' | 'leave' | null
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadData();
@@ -69,7 +73,8 @@ export default function MatchDetailsScreen() {
       setJoining(true);
       await leaveMatch(id);
       setConfirmAction(null);
-      Alert.alert("Success", "You've successfully left the squad.");
+      setSuccessMessage("You've left the squad.");
+      setShowSuccess(true);
       loadData();
     } catch (error) {
       const message = error.response?.data?.message || "Failed to leave match.";
@@ -87,17 +92,9 @@ export default function MatchDetailsScreen() {
     try {
       setJoining(true);
       await deleteMatch(id);
-      
-      const successMessage = "Your session has been cancelled.";
-      
-      if (Platform.OS === 'web') {
-        window.alert(successMessage);
-        router.replace("/(tabs)");
-      } else {
-        Alert.alert("Deleted", successMessage, [
-          { text: "OK", onPress: () => router.replace("/(tabs)") }
-        ], { cancelable: false });
-      }
+      setConfirmAction(null);
+      setSuccessMessage("Your session has been cancelled.");
+      setShowSuccess(true);
     } catch (error) {
       const message = error.response?.data?.message || "Failed to delete match.";
       Alert.alert("Error", message);
@@ -171,7 +168,7 @@ export default function MatchDetailsScreen() {
           <View className="flex-row gap-3 mb-8">
             <InfoCard icon="calendar-alt" label="Date" value={match?.date} />
             <InfoCard icon="clock" label="Time" value={match?.time} />
-            <InfoCard icon="tag" label="Price" value={`Rs. ${match?.price || 0}`} />
+            <InfoCard icon="tag" label="Price/Player" value={`Rs. ${match?.price || 0}`} />
           </View>
 
           {/* Match Details Section */}
@@ -180,6 +177,7 @@ export default function MatchDetailsScreen() {
             <DetailRow icon="format-list-bulleted" label="Format" value={match?.format} />
             <DetailRow icon="trending-up" label="Skill Level" value={match?.skillLevel} />
             <DetailRow icon="account-tie" label="Organizer" value={match?.host?.username} />
+            <DetailRow icon="phone" label="Contact" value={match?.contactNumber} />
           </View>
 
           {/* Players Section (Only show if players exist) */}
@@ -208,37 +206,12 @@ export default function MatchDetailsScreen() {
           <View className="h-40" />
         </ScrollView>
 
-        {/* Bottom Action Bar */}
+        {/* Bottom Action Bar - always shows the primary action */}
         <View 
           className="absolute bottom-0 left-0 right-0 bg-black/80 p-6 border-t border-white/5"
           style={{ zIndex: 100 }}
         >
-          {confirmAction ? (
-            <View className="flex-row gap-3">
-              <TouchableOpacity 
-                onPress={() => setConfirmAction(null)}
-                className="flex-1 h-16 rounded-2xl items-center justify-center bg-white/5 border border-white/10"
-              >
-                <Text className="text-white/60 font-black uppercase tracking-widest">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={confirmAction === 'delete' ? proceedDelete : proceedLeave}
-                disabled={joining}
-                className="flex-[2] h-16 rounded-2xl flex-row items-center justify-center bg-red-500"
-              >
-                {joining ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <>
-                    <MaterialIcons name={confirmAction === 'delete' ? "delete" : "exit-to-app"} size={20} color="white" />
-                    <Text className="font-black uppercase tracking-widest text-white ml-2">
-                       Confirm {confirmAction === 'delete' ? "Delete" : "Leave"}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          ) : isHost ? (
+          {isHost ? (
             <TouchableOpacity 
               onPress={handleDelete}
               disabled={joining}
@@ -291,6 +264,32 @@ export default function MatchDetailsScreen() {
           )}
         </View>
       </View>
+
+      {/* Confirm Modal for Leave / Delete */}
+      <ConfirmModal
+        visible={!!confirmAction}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={confirmAction === 'delete' ? proceedDelete : proceedLeave}
+        loading={joining}
+        confirmDestructive
+        title={confirmAction === 'delete' ? "Delete Session?" : "Leave Squad?"}
+        message={confirmAction === 'delete'
+          ? "This will cancel the match for all players."
+          : "You can rejoin if the match isn't full."
+        }
+        confirmText={confirmAction === 'delete' ? "Delete" : "Leave"}
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          router.replace('/(tabs)');
+        }}
+        title="Done"
+        message={successMessage}
+      />
     </SafeAreaView>
   );
 }

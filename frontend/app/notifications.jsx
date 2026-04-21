@@ -7,12 +7,26 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { fetchNotifications, markAllNotificationsRead } from "../services/api";
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  deleteNotification,
+  clearAllNotifications,
+} from "../services/api";
 import { useNotifications } from "../context/NotificationContext";
+import { Alert } from "react-native";
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // ────────────────────────────────────────────────────────────────
 // Helpers
@@ -137,7 +151,7 @@ function EmptyState() {
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { refreshCount } = useNotifications();
+  const { refreshCount, clearBadge } = useNotifications();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -157,9 +171,11 @@ export default function NotificationsScreen() {
   // On mount: load notifications, mark all as read, reset badge
   useEffect(() => {
     loadNotifications();
-    markAllNotificationsRead().catch(() => {});
-    refreshCount();
-  }, [loadNotifications, refreshCount]);
+    if (clearBadge) clearBadge();
+    markAllNotificationsRead()
+      .then(() => refreshCount())
+      .catch(() => {});
+  }, [loadNotifications, refreshCount, clearBadge]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -189,21 +205,64 @@ export default function NotificationsScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            onPress={async () => {
-              try {
-                await markAllNotificationsRead();
-                setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-                refreshCount();
-              } catch (err) {
-                console.error("Failed to mark all as read:", err.message);
-              }
-            }}
-          >
-            <Text className="text-xs font-inter-bold text-[#FFB300] uppercase tracking-wider">
-              Mark all read
-            </Text>
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-4">
+            <TouchableOpacity
+              onPress={async () => {
+                try {
+                  if (clearBadge) clearBadge(); // Optimistic UI update
+                  setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+                  await markAllNotificationsRead();
+                  refreshCount();
+                } catch (err) {
+                  console.error("Failed to mark all as read:", err.message);
+                }
+              }}
+            >
+              <Text className="text-[10px] font-inter-bold text-[#FFB300] uppercase tracking-wider">
+                Mark all read
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                Alert.alert(
+                  "Clear All",
+                  "Are you sure you want to clear all notifications?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Clear All",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          // Visual transition
+                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                          setNotifications([]);
+                          
+                          const response = await clearAllNotifications();
+                          if (response.status >= 200 && response.status < 300) {
+                            if (clearBadge) clearBadge();
+                            refreshCount();
+                          } else {
+                            throw new Error("Server error");
+                          }
+                        } catch (err) {
+                          console.error("Clear notifications error:", err.message);
+                          Alert.alert("Error", "Could not clear on the server. Please try again.");
+                          loadNotifications(); // Restore list
+                        }
+                      },
+                    },
+                  ],
+                  { cancelable: true }
+                );
+              }}
+              activeOpacity={0.6}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <MaterialCommunityIcons name="trash-can-outline" size={24} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Content ── */}
@@ -215,7 +274,9 @@ export default function NotificationsScreen() {
           <FlatList
             data={notifications}
             keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => <NotificationCard item={item} />}
+            renderItem={({ item }) => (
+              <NotificationCard item={item} />
+            )}
             ItemSeparatorComponent={Separator}
             ListEmptyComponent={EmptyState}
             refreshControl={

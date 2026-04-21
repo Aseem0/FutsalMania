@@ -6,8 +6,12 @@ import {
   getProfileController,
   getUsersCountController,
   getAllUsersController,
-  adminCreateUserController,
   deleteUserController,
+  verifyOTPController,
+  resendOTPController,
+  forgotPasswordController,
+  resetPasswordController,
+  adminCreateUserController,
 } from "../controller/userController.js";
 import { getArenas, createArena, updateArena, deleteArena, getArenaAvailability } from "../controller/arenaController.js";
 import {
@@ -20,12 +24,14 @@ import {
   deleteMatch,
 } from "../controller/matchController.js";
 import { createTeam, getMyTeams, getAllTeams } from "../controller/teamController.js";
-import { hostTeamMatch, getTeamMatches, getTeamMatchById, joinAsOpponent } from "../controller/teamMatchController.js";
-import { createRecruitment, getRecruitments } from "../controller/playerRecruitmentController.js";
+import { hostTeamMatch, getTeamMatches, getTeamMatchById, joinAsOpponent, deleteTeamMatch, getMyTeamMatches } from "../controller/teamMatchController.js";
+import { createRecruitment, getRecruitments, deleteRecruitment } from "../controller/playerRecruitmentController.js";
 import {
   applyToRecruitment,
   getMyApplications,
   getReceivedApplications,
+  updateApplicationStatus,
+  deleteApplication,
 } from "../controller/recruitmentApplicationController.js";
 import {
   createTournament,
@@ -33,6 +39,9 @@ import {
   getTournamentById,
   updateTournament,
   deleteTournament,
+  registerForTournament,
+  getTournamentRegistrations,
+  deleteTournamentRegistration,
 } from "../controller/tournamentController.js";
 import {
   createManager,
@@ -61,6 +70,8 @@ import {
   getUnreadCount,
   markAsRead,
   markAllRead,
+  deleteNotification,
+  clearAllNotifications,
 } from "../controller/notificationController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -92,6 +103,10 @@ const router = Router();
 
 router.post("/register", registerController);
 router.post("/login", loginController);
+router.post("/verify-otp", verifyOTPController);
+router.post("/resend-otp", resendOTPController);
+router.post("/forgot-password", forgotPasswordController);
+router.post("/reset-password", resetPasswordController);
 router.get("/arenas", getArenas);
 router.get("/arenas/:id/slots", getArenaAvailability);
 router.post("/arenas", authMiddleware, adminMiddleware, createArena);
@@ -124,15 +139,20 @@ router.get("/teams", getAllTeams);
 // Team Match Routes
 router.post("/team-matches", authMiddleware, hostTeamMatch);
 router.get("/team-matches", getTeamMatches);
+router.get("/team-matches/my", authMiddleware, getMyTeamMatches);
 router.get("/team-matches/:id", getTeamMatchById);
 router.post("/team-matches/:matchId/join", authMiddleware, joinAsOpponent);
+router.delete("/team-matches/:id", authMiddleware, deleteTeamMatch);
 
 // Recruitment Routes
 router.post("/recruitments", authMiddleware, createRecruitment);
 router.get("/recruitments", getRecruitments);
+router.delete("/recruitments/:id", authMiddleware, deleteRecruitment);
 router.post("/recruitments/:id/apply", authMiddleware, applyToRecruitment);
 router.get("/recruitments/applications/my", authMiddleware, getMyApplications);
 router.get("/recruitments/applications/received", authMiddleware, getReceivedApplications);
+router.patch("/recruitments/applications/:id", authMiddleware, updateApplicationStatus);
+router.delete("/recruitments/applications/:id", authMiddleware, deleteApplication);
 
 // Tournament Routes
 router.post("/tournaments", authMiddleware, adminMiddleware, createTournament);
@@ -140,6 +160,9 @@ router.get("/tournaments", getTournaments);
 router.get("/tournaments/:id", getTournamentById);
 router.put("/tournaments/:id", authMiddleware, adminMiddleware, updateTournament);
 router.delete("/tournaments/:id", authMiddleware, adminMiddleware, deleteTournament);
+router.post("/tournaments/:id/register", authMiddleware, registerForTournament);
+router.get("/tournaments/:id/registrations", authMiddleware, adminOrManagerMiddleware, getTournamentRegistrations);
+router.delete("/tournaments/registrations/:registrationId", authMiddleware, adminOrManagerMiddleware, deleteTournamentRegistration);
 
 // Manager Management (Admin only)
 router.post("/managers", authMiddleware, createManager);
@@ -169,5 +192,7 @@ router.get("/notifications", authMiddleware, getUserNotifications);
 router.get("/notifications/unread-count", authMiddleware, getUnreadCount);
 router.patch("/notifications/read-all", authMiddleware, markAllRead);
 router.patch("/notifications/:id/read", authMiddleware, markAsRead);
+router.post("/notifications/clear-all", authMiddleware, clearAllNotifications);
+router.delete("/notifications/:id", authMiddleware, deleteNotification);
 
 export default router;

@@ -124,7 +124,7 @@ const GamesTab = () => {
         {loading ? (
           <ActivityIndicator color="#FFB300" className="mt-10" />
         ) : (
-          <View className="gap-6 pb-32">
+          <View className="gap-6 pb-44">
             {filteredMatches.map((match) => (
               <TouchableOpacity
                 key={match.id}
@@ -133,7 +133,7 @@ const GamesTab = () => {
                   pathname: "/(matches)/match-details",
                   params: { id: match.id }
                 })}
-                className="relative w-full h-64 rounded-3xl overflow-hidden border border-white/5"
+                className="relative w-full h-48 rounded-3xl overflow-hidden border border-white/5"
               >
                 <Image
                   source={{ uri: match.arena?.image || "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop" }}
@@ -141,25 +141,32 @@ const GamesTab = () => {
                   resizeMode="cover"
                 />
                 <View className="absolute inset-0 bg-black/60" />
-                <View className="p-6 justify-between h-full">
+                <View className="p-5 justify-between h-full">
                   <View className="flex-row justify-between items-start">
-                    <View>
-                      <Text className="text-white text-2xl font-black">{match.arena?.name || "Premium Futsal"}</Text>
-                      <Text className="text-white/50 text-xs font-bold">{match.arena?.location || "Kathmandu"}</Text>
+                    <View className="flex-1 mr-2">
+                      <Text className="text-white text-xl font-black" numberOfLines={1}>{match.arena?.name || "Premium Futsal"}</Text>
+                      <Text className="text-white/50 text-[10px] font-bold">{match.arena?.location || "Kathmandu"}</Text>
                     </View>
                     <View className="bg-black/80 px-3 py-1.5 rounded-xl border border-white/10">
-                      <Text className="text-white text-[10px] font-black uppercase tracking-widest">
+                      <Text className="text-white text-[9px] font-black uppercase tracking-widest">
                         {formatDate(match.date)}
                       </Text>
                     </View>
                   </View>
                   <View className="flex-row items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5">
                      <View className="flex-row items-center gap-2">
-                       <MaterialCommunityIcons name="clock-outline" size={18} color="#FFB300" />
-                       <Text className="text-white font-black">{match.time}</Text>
+                       <MaterialCommunityIcons name="clock-outline" size={16} color="#FFB300" />
+                       <Text className="text-white font-black text-xs">{match.time}</Text>
                      </View>
-                     <View className="bg-amber-400 px-3 py-1 rounded-full">
-                       <Text className="text-black text-[10px] font-black uppercase">{match.format} • {match.skillLevel}</Text>
+                     <View className="flex-row items-center gap-2">
+                       <View className="bg-white/10 px-3 py-1 rounded-full border border-white/5">
+                         <Text className="text-white/60 text-[8px] font-black uppercase tracking-widest">
+                           {match.price > 0 ? `Rs. ${match.price}` : 'FREE'}
+                         </Text>
+                       </View>
+                       <View className="bg-amber-400 px-3 py-1 rounded-full">
+                         <Text className="text-black text-[8px] font-black uppercase">{match.format} • {match.skillLevel}</Text>
+                       </View>
                      </View>
                   </View>
                 </View>

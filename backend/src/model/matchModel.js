@@ -50,6 +50,11 @@ const createMatchModel = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      contactNumber: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "Not Provided",
+      },
     },
     {
       tableName: "matches",

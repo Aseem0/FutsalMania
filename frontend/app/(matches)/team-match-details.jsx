@@ -13,7 +13,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { fetchTeamMatchById, joinTeamMatchAsOpponent, fetchMyTeams, fetchUserProfile } from "../../services/api";
+import { fetchTeamMatchById, joinTeamMatchAsOpponent, fetchMyTeams, fetchUserProfile, deleteTeamMatch } from "../../services/api";
+import ConfirmModal from "../../components/ConfirmModal";
+import SuccessModal from "../../components/SuccessModal";
+import ChallengeModal from "../../components/team-match/ChallengeModal";
 
 export default function TeamMatchDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -22,6 +25,10 @@ export default function TeamMatchDetailsScreen() {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     loadData();
@@ -45,41 +52,39 @@ export default function TeamMatchDetailsScreen() {
     }
   };
 
-  const handleChallenge = async () => {
+  const handleChallenge = () => {
+    setShowChallenge(true);
+  };
+
+  const confirmChallenge = async (data) => {
     try {
       setJoining(true);
-      const teamRes = await fetchMyTeams();
-      const myTeams = teamRes.data;
+      await joinTeamMatchAsOpponent(id, data);
+      setShowChallenge(false);
+      setSuccessMessage("Match Scheduled! See you on the pitch. ⚽");
+      setShowSuccess(true);
+      loadData();
+    } catch (err) {
+      Alert.alert("Failed", err.response?.data?.message || "Could not accept challenge.");
+    } finally {
+      setJoining(false);
+    }
+  };
 
-      if (!myTeams || myTeams.length === 0) {
-        Alert.alert("Squad Required", "You need a team to accept challenges.");
-        return;
-      }
+  const handleDelete = () => {
+    setShowConfirm(true);
+  };
 
-      const myTeam = myTeams[0];
-      const teamName = match?.customTeamName || match?.hostTeam?.name || "this team";
-
-      Alert.alert(
-        "Confirm Challenge",
-        `Challenge ${teamName} using ${myTeam.name}?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "SEND CHALLENGE",
-            onPress: async () => {
-              try {
-                await joinTeamMatchAsOpponent(id, myTeam.id);
-                Alert.alert("Match Scheduled!", "See you on the pitch. ⚽");
-                loadData();
-              } catch (err) {
-                Alert.alert("Failed", err.response?.data?.message || "Could not accept challenge.");
-              }
-            }
-          }
-        ]
-      );
+  const proceedDelete = async () => {
+    try {
+      setJoining(true);
+      await deleteTeamMatch(id);
+      setShowConfirm(false);
+      setSuccessMessage("Your team challenge has been cancelled.");
+      setShowSuccess(true);
     } catch (error) {
-      console.error("Challenge error:", error);
+      const message = error.response?.data?.message || "Failed to delete team match.";
+      Alert.alert("Error", message);
     } finally {
       setJoining(false);
     }
@@ -171,11 +176,11 @@ export default function TeamMatchDetailsScreen() {
                     {match?.guestTeam?.logo ? (
                       <Image source={{ uri: match.guestTeam.logo }} className="w-full h-full rounded-2xl" />
                     ) : (
-                      <Text className="text-white/20 text-2xl font-black">?</Text>
+                      <FontAwesome5 name="shield-alt" size={22} color="#52525b" />
                     )}
                   </View>
                   <Text className="text-white font-black text-xs uppercase text-center" numberOfLines={1}>
-                    {match?.guestTeam?.name || "Waiting..."}
+                    {match?.guestTeam?.name || match?.guestCustomTeamName || "Waiting..."}
                   </Text>
                   <Text className="text-white/30 text-[8px] font-bold uppercase mt-0.5">Opponent</Text>
                 </View>
@@ -197,6 +202,10 @@ export default function TeamMatchDetailsScreen() {
             <DetailRow icon="map-marker" label="Arena" value={match?.arena?.name} />
             <DetailRow icon="map-marker-outline" label="Location" value={match?.arena?.location} />
             <DetailRow icon="account-tie" label="Organizer" value={match?.host?.username} />
+            <DetailRow icon="phone" label="Host Contact" value={match?.contactNumber} />
+            {isScheduled && (
+              <DetailRow icon="phone" label="Opponent Contact" value={match?.guestContactNumber} />
+            )}
           </View>
 
           <View className="h-40" />
@@ -208,12 +217,22 @@ export default function TeamMatchDetailsScreen() {
           style={{ zIndex: 100 }}
         >
           {isHost ? (
-            <View className="w-full h-16 rounded-2xl flex-row items-center justify-center bg-white/5 border border-white/10">
-              <FontAwesome5 name="broadcast-tower" size={16} color="#fbbf24" />
-              <Text className="font-black uppercase tracking-[2px] text-white/60 ml-3">
-                {isScheduled ? "Match Scheduled" : "Your Challenge is Live"}
-              </Text>
-            </View>
+            <TouchableOpacity 
+              onPress={handleDelete}
+              disabled={joining}
+              className="w-full h-16 rounded-2xl flex-row items-center justify-center bg-red-500/10 border border-red-500/50"
+            >
+              {joining ? (
+                <ActivityIndicator color="#ef4444" />
+              ) : (
+                <>
+                  <MaterialIcons name="delete-outline" size={20} color="#ef4444" />
+                  <Text className="font-black uppercase tracking-[2px] text-red-500 ml-2">
+                    Delete Challenge
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
           ) : isScheduled ? (
             <View className="w-full h-16 rounded-2xl flex-row items-center justify-center bg-green-500/10 border border-green-500/30">
               <MaterialIcons name="check-circle" size={20} color="#22c55e" />
@@ -241,6 +260,35 @@ export default function TeamMatchDetailsScreen() {
           )}
         </View>
       </View>
+
+      <ConfirmModal
+        visible={showConfirm}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={proceedDelete}
+        loading={joining}
+        confirmDestructive
+        title="Delete Challenge?"
+        message="This will cancel the match for all teams."
+        confirmText="Delete"
+      />
+
+      <SuccessModal
+        visible={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          router.replace('/(tabs)');
+        }}
+        title="Done"
+        message={successMessage}
+      />
+
+      <ChallengeModal
+        visible={showChallenge}
+        onClose={() => setShowChallenge(false)}
+        onConfirm={confirmChallenge}
+        loading={joining}
+        targetTeamName={teamName}
+      />
     </SafeAreaView>
   );
 }

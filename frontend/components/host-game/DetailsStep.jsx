@@ -37,11 +37,17 @@ export default function DetailsStep({ arenaId, details, onUpdate }) {
   const dates = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() + i);
+    
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    const localFull = `${y}-${m}-${d}`;
+    
     return {
       day: date.toLocaleDateString('en-US', { weekday: 'short' }),
       date: date.getDate(),
       month: date.toLocaleDateString('en-US', { month: 'short' }),
-      full: date.toISOString().split('T')[0],
+      full: localFull,
       isToday: i === 0,
     };
   });
@@ -68,36 +74,37 @@ export default function DetailsStep({ arenaId, details, onUpdate }) {
   ];
 
   const isSlotBooked = (value) => bookedSlots.some((s) => s.startsWith(value));
+  
+  const isSlotPassed = (value) => {
+    if (details.date !== dates[0].full) return false;
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kathmandu", hour12: false }).substring(0, 5);
+    return value < currentTime;
+  };
+
   // Compare using 24hr value — details.time is now stored as "06:00" not "6:00 AM"
   const isSlotSelected = (value) => details.time === value;
 
   const renderSlot = (slot) => {
     const booked = isSlotBooked(slot.value);
+    const passed = isSlotPassed(slot.value);
     const selected = isSlotSelected(slot.value);
+    const disabled = booked || passed;
 
     return (
       <TouchableOpacity
         key={slot.value}
-        disabled={booked}
+        disabled={disabled}
         onPress={() => onUpdate({ time: slot.value })}
         activeOpacity={0.7}
         style={{ width: '30%' }}
-        className={`
-          py-3 rounded-2xl items-center justify-center border mb-2.5
-          ${selected
-            ? 'bg-amber-400 border-amber-400'
-            : booked
-              ? 'bg-[#0e0e0e] border-white/[0.04]'
-              : 'bg-[#111] border-white/[0.07]'
-          }
-        `}
+        className={`py-3 rounded-2xl items-center justify-center border mb-2.5 ${selected ? 'bg-amber-400 border-amber-400' : disabled ? 'bg-[#0e0e0e] border-white/[0.04]' : 'bg-[#111] border-white/[0.07]'}`}
       >
-        {booked && !selected ? (
+        {disabled && !selected ? (
           <>
             <Text className="text-[11px] font-bold text-white/20 line-through">{slot.label}</Text>
             <View className="flex-row items-center gap-0.5 mt-0.5">
-              <MaterialIcons name="do-not-disturb-on" size={9} color="#3f3f46" />
-              <Text className="text-[9px] font-bold text-zinc-700 uppercase tracking-wider">Booked</Text>
+              <MaterialIcons name={passed ? "history" : "do-not-disturb-on"} size={9} color="#3f3f46" />
+              <Text className="text-[9px] font-bold text-zinc-700 uppercase tracking-wider">{passed ? "Passed" : "Booked"}</Text>
             </View>
           </>
         ) : (
@@ -158,26 +165,19 @@ export default function DetailsStep({ arenaId, details, onUpdate }) {
                   key={d.full}
                   onPress={() => onUpdate({ date: d.full, time: '' })}
                   activeOpacity={0.8}
-                  className={`rounded-2xl items-center justify-center border
-                    ${isSelected
-                      ? 'bg-amber-400 border-amber-400'
-                      : 'bg-[#111] border-white/[0.07]'
-                    }`}
+                  className={`rounded-2xl items-center justify-center border ${isSelected ? 'bg-amber-400 border-amber-400' : 'bg-[#111] border-white/[0.07]'}`}
                   style={{ width: 62, height: 78 }}
                 >
                   {d.isToday && !isSelected && (
                     <View className="absolute top-2 w-1 h-1 rounded-full bg-amber-400" />
                   )}
-                  <Text className={`text-[10px] font-bold uppercase tracking-wider mt-2
-                    ${isSelected ? 'text-black/60' : 'text-white/30'}`}>
+                  <Text className={`text-[10px] font-bold uppercase tracking-wider mt-2 ${isSelected ? 'text-black/60' : 'text-white/30'}`}>
                     {d.day}
                   </Text>
-                  <Text className={`text-[22px] font-black leading-tight
-                    ${isSelected ? 'text-black' : d.isToday ? 'text-amber-400' : 'text-white'}`}>
+                  <Text className={`text-[22px] font-black leading-tight ${isSelected ? 'text-black' : d.isToday ? 'text-amber-400' : 'text-white'}`}>
                     {d.date}
                   </Text>
-                  <Text className={`text-[9px] font-bold uppercase mb-2
-                    ${isSelected ? 'text-black/50' : 'text-white/20'}`}>
+                  <Text className={`text-[9px] font-bold uppercase mb-2 ${isSelected ? 'text-black/50' : 'text-white/20'}`}>
                     {d.month}
                   </Text>
                 </TouchableOpacity>

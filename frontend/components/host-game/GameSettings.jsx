@@ -16,7 +16,7 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
 
   const adjustPlayers = (amount) => {
     const current = settings.maxPlayers || 10;
-    const next = Math.max(2, Math.min(22, current + amount));
+    const next = Math.max(2, Math.min(15, current + amount));
     updateSetting('maxPlayers', next);
   };
 
@@ -27,6 +27,11 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
       <Text className="text-white/40 text-[10px] font-inter-bold uppercase tracking-[2px]">
         {title}
       </Text>
+      {title === "Contact Number" && (
+        <View className="bg-red-500/20 px-1.5 py-0.5 rounded border border-red-500/30">
+          <Text className="text-red-500 text-[7px] font-inter-black uppercase">REQUIRED</Text>
+        </View>
+      )}
     </View>
   );
 
@@ -178,6 +183,26 @@ export default function GameSettings({ settings, onUpdate, isTeamMatch = false, 
           </View>
         </View>
       )}
+
+      {/* Contact Number */}
+      <View className="mb-10">
+        <SectionLabel title="Contact Number" icon="phone" />
+        <View className="bg-[#111] p-4 rounded-2xl border border-white/5 flex-row items-center">
+          <MaterialIcons name="phone" size={18} color="#fbbf24" className="mr-3" />
+          <TextInput
+            placeholder="e.g., +977 98XXXXXXXX"
+            placeholderTextColor="rgba(255,255,255,0.2)"
+            keyboardType="phone-pad"
+            value={settings.contactNumber}
+            onChangeText={(val) => updateSetting('contactNumber', val)}
+            className="flex-1 ml-3 text-white font-inter-black text-lg"
+            style={Platform.OS === 'web' ? { outlineWidth: 0 } : {}}
+          />
+        </View>
+        <Text className="text-white/20 text-[9px] font-inter-bold uppercase mt-2 ml-1 italic">
+          This number will be visible to other players.
+        </Text>
+      </View>
     </ScrollView>
   );
 }

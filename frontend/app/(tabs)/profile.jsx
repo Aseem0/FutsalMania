@@ -143,7 +143,15 @@ export default function ProfileScreen() {
 
           {/* Menu Sections */}
           <View className="mb-10">
-            <SectionHeader title="Account" />
+            <SectionHeader title="Recruitment" topMargin />
+            <ProfileOption 
+              icon="folder-account-outline" 
+              title="Recruitment Hub" 
+              subtitle="Manage applications and recruitments" 
+              onPress={() => router.push('/(profile)/recruitment-hub')}
+            />
+
+            <SectionHeader title="Account" topMargin />
             <ProfileOption 
               icon="account-outline" 
               title="Personal Information" 

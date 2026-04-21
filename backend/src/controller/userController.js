@@ -1,7 +1,8 @@
 import { generateAccessToken, generateRefreshToken } from "../../auth/auth.js";
-import { User, Arena } from "../model/index.js";
+import { User, Manager, Arena } from "../model/index.js";
 import bcryptjs from "bcryptjs";
 import { Op } from "sequelize";
+import { generateOTP, hashOTP, sendOTPEmail } from "../utils/emailService.js";
 
 export const registerController = async (req, res) => {
   const { username, email, password } = req.body;
@@ -19,27 +20,55 @@ export const registerController = async (req, res) => {
     const hashedPassword = await bcryptjs.hash(password, 8);
     const refreshToken = await generateRefreshToken({ username });
 
+    // Generate and handle OTP
+    const otp = generateOTP();
+    const hashedOtp = await hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
     await User.create({
       username,
       email,
       password: hashedPassword,
       refreshToken,
+      is_verified: false,
+      otp_code: hashedOtp,
+      otp_expiry: otpExpiry,
+      last_otp_sent: new Date(),
     });
 
+    // Send the plain text OTP to user's email
+    try {
+      await sendOTPEmail(email, otp);
+      console.log(`[Signup] OTP email sent successfully to ${email}`);
+    } catch (mailError) {
+      console.error("[Signup] Failed to send OTP email:", mailError);
+      console.log(`[DEBUG] OTP for ${email} is: ${otp}`);
+      return res.status(201).json({
+        message: "User registered, but verification email failed to send. Check server logs for OTP.",
+        userData: { username, email },
+        debugOtp: otp // Temporarily include in response for easier testing if needed, or just log to console
+      });
+    }
+
     return res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered. OTP sent to your email. Please verify.",
       userData: { username, email },
     });
   } catch (error) {
     console.error("Registration error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
 export const loginController = async (req, res) => {
   const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username/email and password are required." });
+  }
+
   try {
-    const existingUser = await User.findOne({ 
+    let existingUser = await User.findOne({ 
       where: { 
         [Op.or]: [
           { username: username },
@@ -48,22 +77,53 @@ export const loginController = async (req, res) => {
       } 
     });
 
+    // If not found in User table, check Manager table
+    let isManager = false;
+    if (!existingUser) {
+      existingUser = await Manager.findOne({
+        where: {
+          [Op.or]: [
+            { username: username },
+            { email: username }
+          ]
+        }
+      });
+      if (existingUser) isManager = true;
+    }
+
     if (existingUser != null) {
       if (existingUser.status === 'disabled') {
+        console.log(`[Login] Access denied: Account ${username} is disabled.`);
         return res.status(403).json({ message: "Your account has been disabled. Please contact an administrator." });
+      }
+
+      // Check verification status (only for regular users)
+      if (!isManager && !existingUser.is_verified) {
+        console.log(`[Login] Rejected: User ${username} is not verified.`);
+        return res.status(401).json({ message: "Account not verified. Please verify your email first." });
       }
 
       const isValidPassword = await bcryptjs.compare(
         password,
         existingUser.password
       );
+      
       if (!isValidPassword) {
         return res.status(401).json("Invalid password");
       }
-      const accessToken = await generateAccessToken(existingUser.dataValues);
-      const refreshToken = await generateRefreshToken(existingUser.dataValues);
 
-      existingUser.update({ refreshToken: refreshToken });
+      // Prepare payload for token
+      const tokenPayload = {
+        id: existingUser.id,
+        username: existingUser.username,
+        role: existingUser.role,
+        arenaId: isManager ? existingUser.arenaId : null
+      };
+
+      const accessToken = await generateAccessToken(tokenPayload);
+      const refreshToken = await generateRefreshToken(tokenPayload);
+
+      await existingUser.update({ refreshToken: refreshToken });
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -73,18 +133,119 @@ export const loginController = async (req, res) => {
       return res.status(200).json({
         message: "Login successful",
         userData: {
-          username: existingUser.dataValues.username,
-          role: existingUser.dataValues.role,
+          username: existingUser.username,
+          role: existingUser.role,
           accessToken: accessToken,
           refreshToken: refreshToken,
         },
       });
     } else {
-      return res.status(404).json("User not found");
+      return res.status(404).json("Account not found");
     }
   } catch (error) {
     console.log("Internal error", error);
     res.status(500).json("Internal server error");
+  }
+};
+
+export const verifyOTPController = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: "User is already verified" });
+    }
+
+    // Check for lockout
+    if (user.otp_attempts >= 5) {
+      return res.status(429).json({ message: "Too many failed attempts. Please request a new OTP." });
+    }
+
+    // Check expiry
+    if (new Date() > new Date(user.otp_expiry)) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // Compare hashed OTP
+    const isMatch = await bcryptjs.compare(otp, user.otp_code);
+    if (!isMatch) {
+      // Increment attempts
+      user.otp_attempts += 1;
+      await user.save();
+      
+      const remainingAttempts = 5 - user.otp_attempts;
+      return res.status(400).json({ 
+        message: `Invalid OTP code. ${remainingAttempts} attempts remaining.`,
+        attemptsRemaining: remainingAttempts
+      });
+    }
+
+    // Mark as verified
+    user.is_verified = true;
+    user.otp_code = null;
+    user.otp_expiry = null;
+    user.otp_attempts = 0; // Reset attempts
+    await user.save();
+
+    return res.status(200).json({ message: "Email verified successfully. You can now login." });
+  } catch (error) {
+    console.error("OTP Verification error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const resendOTPController = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: "User is already verified" });
+    }
+
+    // Rate Limiting: Check cooldown (60 seconds)
+    const now = new Date();
+    if (user.last_otp_sent && (now - new Date(user.last_otp_sent)) < 60000) {
+      const waitTime = Math.ceil(60 - (now - new Date(user.last_otp_sent)) / 1000);
+      return res.status(429).json({ message: `Please wait ${waitTime} seconds before requesting another code.` });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    const hashedOtp = await hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Update user
+    user.otp_code = hashedOtp;
+    user.otp_expiry = otpExpiry;
+    user.otp_attempts = 0; // Reset attempts on resend
+    user.last_otp_sent = now;
+    await user.save();
+
+    // Send email
+    try {
+      await sendOTPEmail(email, otp);
+      console.log(`[Resend OTP] email sent successfully to ${email}`);
+    } catch (mailError) {
+      console.error("[Resend OTP] Failed to send email:", mailError);
+      console.log(`[DEBUG] New OTP for ${email} is: ${otp}`);
+      return res.status(200).json({ 
+        message: "New OTP generated, but email failed to send. Check server logs for the code.",
+        debugOtp: otp 
+      });
+    }
+
+    return res.status(200).json({ message: "New OTP sent to your email." });
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -122,6 +283,7 @@ export const updateProfileController = async (req, res) => {
 export const getProfileController = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log(`[API] Fetching Profile for user: ${userId}`);
     const user = await User.findByPk(userId, {
       attributes: ["id", "username", "email", "profilePicture", "role"],
     });
@@ -183,12 +345,30 @@ export const adminCreateUserController = async (req, res) => {
 
     const hashedPassword = await bcryptjs.hash(password, 8);
     
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-      role: role.toLowerCase(),
-    });
+    // Check in both tables for duplicates
+    if (role.toLowerCase() === 'manager') {
+      const existingInManager = await Manager.findOne({ where: { [Op.or]: [{ username }, { email }] } });
+      if (existingInManager) return res.status(409).json({ message: "Username or Email already exists in Managers" });
+    }
+
+    let newUser;
+    if (role.toLowerCase() === 'manager') {
+      newUser = await Manager.create({
+        username,
+        email,
+        password: hashedPassword,
+        role: "manager",
+        is_verified: true,
+      });
+    } else {
+      newUser = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        role: role.toLowerCase(),
+        is_verified: true,
+      });
+    }
 
     return res.status(201).json({
       message: "User created successfully",
@@ -201,6 +381,83 @@ export const adminCreateUserController = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin user creation error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const forgotPasswordController = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    // Generate reset OTP
+    const otp = generateOTP();
+    const hashedOtp = await hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp_code = hashedOtp;
+    user.otp_expiry = otpExpiry;
+    user.otp_attempts = 0;
+    user.last_otp_sent = new Date();
+    await user.save();
+
+    // Send email
+    try {
+      await sendOTPEmail(email, otp);
+      console.log(`[Forgot Password] OTP email sent to ${email}`);
+    } catch (mailError) {
+      console.error("[Forgot Password] Failed to send email:", mailError);
+      console.log(`[DEBUG] Password Reset OTP for ${email} is: ${otp}`);
+      return res.status(200).json({ 
+        message: "Reset code generated, but email failed. Check logs.",
+        debugOtp: otp 
+      });
+    }
+
+    return res.status(200).json({ message: "Password reset code sent to your email" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const resetPasswordController = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check expiry
+    if (new Date() > new Date(user.otp_expiry)) {
+      return res.status(400).json({ message: "Reset code has expired" });
+    }
+
+    // Compare OTP
+    const isMatch = await bcryptjs.compare(otp, user.otp_code);
+    if (!isMatch) {
+      user.otp_attempts += 1;
+      await user.save();
+      return res.status(400).json({ message: "Invalid reset code" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcryptjs.hash(newPassword, 8);
+    
+    // Update user
+    user.password = hashedPassword;
+    user.otp_code = null;
+    user.otp_expiry = null;
+    user.otp_attempts = 0;
+    await user.save();
+
+    return res.status(200).json({ message: "Password has been reset successfully. Please login with your new password." });
+  } catch (error) {
+    console.error("Reset password error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
